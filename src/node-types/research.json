@@ -1,0 +1,14 @@
+{
+  "id": "research",
+  "label": "Research",
+  "class": "permanent",
+  "description": "An investigation spike — findings and conclusions from technical research.",
+  "defaultStatus": "draft",
+  "requiredViews": ["dev"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["deprecated"],
+    "deprecated": []
+  }
+}

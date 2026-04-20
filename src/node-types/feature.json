@@ -1,0 +1,14 @@
+{
+  "id": "feature",
+  "label": "Feature",
+  "class": "permanent",
+  "description": "A product capability — permanent record of what was built and why.",
+  "defaultStatus": "draft",
+  "requiredViews": ["dev", "product"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["active", "deprecated"],
+    "deprecated": []
+  }
+}

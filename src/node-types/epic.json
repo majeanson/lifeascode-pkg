@@ -1,0 +1,14 @@
+{
+  "id": "epic",
+  "label": "Epic",
+  "class": "permanent",
+  "description": "A domain grouping — parent node that organises related features.",
+  "defaultStatus": "draft",
+  "requiredViews": ["product"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["active", "deprecated"],
+    "deprecated": []
+  }
+}

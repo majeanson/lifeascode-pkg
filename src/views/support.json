@@ -1,0 +1,13 @@
+{
+  "id": "support",
+  "label": "Support",
+  "description": "Support and on-call guidance — escalation paths, runbook steps, internal notes.",
+  "fields": {
+    "supportNotes": { "type": "prose", "label": "Support Notes", "prose": true },
+    "escalationPath": { "type": "prose", "label": "Escalation Path", "prose": true },
+    "internalNotes": { "type": "prose", "label": "Internal Notes", "prose": true },
+    "steps": { "type": "array", "label": "Steps" },
+    "rollback": { "type": "prose", "label": "Rollback", "prose": true },
+    "runbookTriggers": { "type": "array", "label": "Runbook Triggers" }
+  }
+}

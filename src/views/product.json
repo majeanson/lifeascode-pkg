@@ -1,0 +1,15 @@
+{
+  "id": "product",
+  "label": "Product",
+  "description": "Product context — for PMs, stakeholders, and anyone asking 'why does this exist?'",
+  "fields": {
+    "problem": { "type": "prose", "label": "Problem", "prose": true },
+    "successCriteria": { "type": "prose", "label": "Success Criteria", "prose": true },
+    "acceptanceCriteria": { "type": "array", "label": "Acceptance Criteria" },
+    "impact": { "type": "prose", "label": "Impact", "prose": true },
+    "metrics": { "type": "array", "label": "Metrics" },
+    "milestones": { "type": "array", "label": "Milestones" },
+    "pmSummary": { "type": "string", "label": "PM Summary" },
+    "releaseVersion": { "type": "string", "label": "Release Version" }
+  }
+}

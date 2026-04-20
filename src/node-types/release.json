@@ -1,0 +1,14 @@
+{
+  "id": "release",
+  "label": "Release",
+  "class": "permanent",
+  "description": "A version event — what shipped, what changed, and the user-facing notes.",
+  "defaultStatus": "draft",
+  "requiredViews": ["user"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["deprecated"],
+    "deprecated": []
+  }
+}

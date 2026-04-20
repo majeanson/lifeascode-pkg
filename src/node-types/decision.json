@@ -1,0 +1,14 @@
+{
+  "id": "decision",
+  "label": "Decision",
+  "class": "permanent",
+  "description": "An architectural or design decision — captures rationale and alternatives.",
+  "defaultStatus": "draft",
+  "requiredViews": ["dev"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["active", "deprecated"],
+    "deprecated": []
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "dev",
+  "label": "Developer",
+  "description": "Implementation details — for engineers building and maintaining the feature.",
+  "fields": {
+    "implementation": { "type": "prose", "label": "Implementation", "prose": true },
+    "componentFile": { "type": "string", "label": "Component File" },
+    "codeSnippets": { "type": "array", "label": "Code Snippets" },
+    "npmPackages": { "type": "array", "label": "npm Packages" },
+    "publicInterface": { "type": "array", "label": "Public Interface" },
+    "edgeCases": { "type": "prose", "label": "Edge Cases", "prose": true },
+    "choice": { "type": "prose", "label": "Choice", "prose": true },
+    "rationale": { "type": "prose", "label": "Rationale", "prose": true },
+    "testStrategy": { "type": "string", "label": "Test Strategy" },
+    "rollbackPlan": { "type": "string", "label": "Rollback Plan" }
+  }
+}

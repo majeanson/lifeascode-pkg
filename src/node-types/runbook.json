@@ -1,0 +1,14 @@
+{
+  "id": "runbook",
+  "label": "Runbook",
+  "class": "permanent",
+  "description": "An operational procedure — step-by-step guide for on-call or support scenarios.",
+  "defaultStatus": "draft",
+  "requiredViews": ["support"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["active", "deprecated"],
+    "deprecated": []
+  }
+}

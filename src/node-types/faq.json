@@ -1,0 +1,14 @@
+{
+  "id": "faq",
+  "label": "FAQ",
+  "class": "permanent",
+  "description": "A user-facing Q&A entry — question and answer from the user perspective.",
+  "defaultStatus": "draft",
+  "requiredViews": ["user"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["active", "deprecated"],
+    "deprecated": []
+  }
+}

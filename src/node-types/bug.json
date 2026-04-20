@@ -1,0 +1,14 @@
+{
+  "id": "bug",
+  "label": "Bug",
+  "class": "absorbing",
+  "description": "A defect that must reference what it fixes and where it was resolved.",
+  "defaultStatus": "draft",
+  "requiredViews": ["dev"],
+  "statusTransitions": {
+    "draft": ["active", "deprecated"],
+    "active": ["frozen", "deprecated"],
+    "frozen": ["deprecated"],
+    "deprecated": []
+  }
+}

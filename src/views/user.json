@@ -1,0 +1,12 @@
+{
+  "id": "user",
+  "label": "User",
+  "description": "End-user perspective — what this does and how to use it.",
+  "fields": {
+    "userGuide": { "type": "prose", "label": "User Guide", "prose": true },
+    "knownLimitations": { "type": "array", "label": "Known Limitations" },
+    "workarounds": { "type": "array", "label": "Workarounds" },
+    "releaseNotes": { "type": "prose", "label": "Release Notes", "prose": true },
+    "faq": { "type": "array", "label": "FAQ" }
+  }
+}
