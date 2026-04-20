@@ -31,7 +31,7 @@ export const initCmd = new Command('init')
           'views.product.successCriteria',
         ],
       },
-      hub: { defaultView: 'user', defaultTab: 'browse', accentColor: '#c4a255' },
+      hub: { defaultView: 'user', defaultTab: 'sprint', accentColor: '#c4a255' },
     }
     writeFileSync(configPath, JSON.stringify(config, null, 2))
     console.log(`✓ Created lac.config.json  (project: "${project}")`)

@@ -111,7 +111,7 @@ const CLI_COMMANDS = [
 function CLISection() {
   return (
     <Section title="CLI Reference" sub="Install: npm install -g @lifeascode  →  lac --help">
-      <ImportBox code={`# Install globally\nnpm install -g @lifeascode\n\n# Or use npx\nnpx @lifeascode create feature "My Feature"`} />
+      <ImportBox code={`# Install globally\nnpm install -g @lifeascode\n\n# Or use npx\nnpx --package=@lifeascode lac create feature "My Feature"`} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {CLI_COMMANDS.map(({ cmd, desc }) => (
           <div key={cmd} style={{ display: 'flex', gap: '16px', padding: '12px 14px', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '8px', alignItems: 'flex-start' }}>
@@ -139,7 +139,7 @@ const MCP_TOOLS = [
   { name: 'read_node_context',      desc: 'Read full node content including all view fields and relationships' },
   { name: 'write_node_fields',      desc: 'Write fields using dot-path notation (e.g. views.dev.implementation)' },
   { name: 'advance_node',           desc: 'Validate and transition node status with optional reason' },
-  { name: 'fill_node',              desc: 'AI-fill empty required fields using Claude' },
+  { name: 'fill_node',              desc: 'AI-fill empty required fields using Claude (ANTHROPIC_API_KEY required; lists missing fields if absent)' },
   { name: 'build_graph',            desc: 'Run lac build and return the updated graph summary' },
   { name: 'search_nodes',           desc: 'Full-text search — returns matching node IDs, titles, statuses' },
   { name: 'get_lineage',            desc: 'Trace parent → children → references chain for a node' },

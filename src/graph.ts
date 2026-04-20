@@ -7,14 +7,22 @@ import { scanNodes } from './utils.js'
 
 function buildEdges(nodes: LacNode[]): LacEdge[] {
   const edges: LacEdge[] = []
+  const seen = new Set<string>()
+  function add(edge: LacEdge) {
+    const key = `${edge.from}|${edge.to}|${edge.type}`
+    if (!seen.has(key)) { seen.add(key); edges.push(edge) }
+  }
   for (const node of nodes) {
-    if (node.parent) edges.push({ from: node.parent, to: node.id, type: 'parent' })
-    for (const id of node.blockedBy ?? []) edges.push({ from: node.id, to: id, type: 'blockedBy' })
-    for (const id of node.enables ?? []) edges.push({ from: node.id, to: id, type: 'enables' })
-    for (const id of node.references ?? []) edges.push({ from: node.id, to: id, type: 'references' })
-    if (node.fixes) edges.push({ from: node.id, to: node.fixes, type: 'fixes' })
-    for (const id of node.resolvedInto ?? []) edges.push({ from: node.id, to: id, type: 'resolvedInto' })
-    if (node.supersedes) edges.push({ from: node.id, to: node.supersedes, type: 'supersedes' })
+    // parent → child (from parent's perspective)
+    if (node.parent) add({ from: node.parent, to: node.id, type: 'child' })
+    // children array → same edges (deduplicated by seen set)
+    for (const id of node.children ?? []) add({ from: node.id, to: id, type: 'child' })
+    for (const id of node.blockedBy ?? []) add({ from: node.id, to: id, type: 'blockedBy' })
+    for (const id of node.enables ?? []) add({ from: node.id, to: id, type: 'enables' })
+    for (const id of node.references ?? []) add({ from: node.id, to: id, type: 'references' })
+    if (node.fixes) add({ from: node.id, to: node.fixes, type: 'fixes' })
+    for (const id of node.resolvedInto ?? []) add({ from: node.id, to: id, type: 'resolvedInto' })
+    if (node.supersedes) add({ from: node.id, to: node.supersedes, type: 'supersedes' })
   }
   return edges
 }

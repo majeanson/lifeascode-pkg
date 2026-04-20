@@ -20,10 +20,10 @@ export function statusColor(status: LacStatus, theme: LacTheme): string {
   }
 }
 
-export function statusBg(status: LacStatus, _theme: LacTheme): string {
+export function statusBg(status: LacStatus, theme: LacTheme): string {
   switch (status) {
     case 'draft': return 'rgba(128,128,128,0.12)'
-    case 'active': return 'rgba(196,162,85,0.12)'
+    case 'active': return theme.accentBg
     case 'frozen': return 'rgba(74,158,255,0.12)'
     case 'deprecated': return 'rgba(80,80,80,0.12)'
   }

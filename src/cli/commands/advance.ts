@@ -1,5 +1,4 @@
 import { resolve } from 'node:path'
-import { join } from 'node:path'
 import { Command } from 'commander'
 import { LacStatusSchema } from '../../schema.js'
 import { findLacConfig, loadConfig } from '../../config.js'

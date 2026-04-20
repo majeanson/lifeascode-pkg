@@ -1,10 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { LacNode } from '../../schema.js'
 import type { LacTheme } from '../theme.js'
 import { useLacData, useLacSuccessCriteria } from '../hooks.js'
 import { getViewField, statusBg, statusColor } from '../utils.js'
 import { LacFeatureCard } from './LacFeatureCard.js'
-import { useState } from 'react'
 
 export interface LacSuccessBoardProps {
   theme?: LacTheme

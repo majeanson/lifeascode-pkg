@@ -24,10 +24,10 @@
       "require": "./dist/types.cjs"
     }
   },
+  "main": "./dist/react/index.cjs",
+  "module": "./dist/react/index.js",
   "files": [
-    "dist",
-    "src/node-types",
-    "src/views"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",

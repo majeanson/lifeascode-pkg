@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "project": "lifeascode",
-  "builtAt": "2026-04-20T00:00:00.000Z",
+  "generated": "2026-04-20T00:00:00.000Z",
   "nodes": [
     {
       "id": "epic-lifeascode-v1",
@@ -481,5 +481,9 @@
     { "from": "release-v1-0", "to": "feature-views-architecture", "type": "enables" },
     { "from": "release-v1-0", "to": "feature-markdown-first", "type": "enables" },
     { "from": "release-v1-0", "to": "feature-lac-build", "type": "enables" }
-  ]
+  ],
+  "meta": {
+    "counts": { "nodes": 15, "edges": 21 },
+    "domains": ["cli", "infra", "meta", "mcp", "ops", "parser", "product", "react", "schema", "user"]
+  }
 }

@@ -8,7 +8,6 @@ interface Props {
 }
 
 const FILE_PATH_RE = /^(packages|apps|src|libs|dist)\/[\w\-./@]+\.(tsx?|jsx?|json|css|scss|md|html|mjs|cjs)$/
-const ARROW_ITEM_RE = /^(.+?)\s+→\s+(.+)$/
 
 function parseInline(text: string, theme: LacTheme, onFileOpen?: (path: string) => void): React.ReactNode[] {
   const parts: React.ReactNode[] = []

@@ -100,7 +100,13 @@ export function LacFeatureCard({ node, theme: t, defaultView = 'dev', onClose, s
     setSaving(true)
     setSaveError(null)
     const fields: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(editValues)) fields[`views.${activeView}.${k}`] = v
+    for (const [k, v] of Object.entries(editValues)) {
+      // Restore array fields: if the original value was an array, split back on newlines
+      const original = viewData[k]
+      fields[`views.${activeView}.${k}`] = Array.isArray(original)
+        ? v.split('\n').map((s) => s.trim()).filter(Boolean)
+        : v
+    }
     try { await onSave(node.id, node.domain, fields); setEditMode(false) }
     catch (e) { setSaveError(e instanceof Error ? e.message : 'Save failed') }
     finally { setSaving(false) }

@@ -67,7 +67,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     { name: 'read_node_context', description: 'Read full node content — all views and relationships', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
     { name: 'write_node_fields', description: 'Update fields using dot-path notation (e.g. views.dev.implementation)', inputSchema: { type: 'object', properties: { id: { type: 'string' }, fields: { type: 'object', description: 'Map of dot-path → value' } }, required: ['id', 'fields'] } },
     { name: 'advance_node', description: 'Advance node status with validation (draft→active→frozen→deprecated)', inputSchema: { type: 'object', properties: { id: { type: 'string' }, status: { type: 'string' }, reason: { type: 'string' } }, required: ['id', 'status'] } },
-    { name: 'fill_node', description: 'List missing required fields for a node', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
+    { name: 'fill_node', description: 'AI-fill empty required fields using Claude (requires ANTHROPIC_API_KEY; lists missing fields if key absent)', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
     { name: 'build_graph', description: 'Build .lac/graph.json and .lac/index.json from all nodes', inputSchema: { type: 'object', properties: {} } },
     { name: 'search_nodes', description: 'Full-text search across all nodes', inputSchema: { type: 'object', properties: { query: { type: 'string' }, type: { type: 'string' }, domain: { type: 'string' }, status: { type: 'string' } }, required: ['query'] } },
     { name: 'get_lineage', description: 'Get parent/child lineage of a node', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
@@ -181,16 +181,44 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         if (!found) return ok(`Node not found: ${args['id']}`)
         const { node } = found
         const typeDef = config.types[node.type]
-        const missing: string[] = []
+        const missingByView: Record<string, string[]> = {}
         for (const viewId of typeDef?.requiredViews ?? []) {
           const viewDef = config.views[viewId]
-          for (const [fieldId, fieldDef] of Object.entries(viewDef?.fields ?? {})) {
-            if (isEmpty(getNestedValue(node, `views.${viewId}.${fieldId}`))) {
-              missing.push(`views.${viewId}.${fieldId} (${fieldDef.label})`)
-            }
+          const currentView = (node.views[viewId] ?? {}) as Record<string, unknown>
+          const missing: string[] = []
+          for (const [fieldId] of Object.entries(viewDef?.fields ?? {})) {
+            if (isEmpty(getNestedValue(node, `views.${viewId}.${fieldId}`))) missing.push(fieldId)
           }
+          if (missing.length > 0) missingByView[viewId] = missing
         }
-        return ok(missing.length === 0 ? 'All required fields filled.' : `Missing fields:\n${missing.map((f) => `• ${f}`).join('\n')}`)
+        if (Object.keys(missingByView).length === 0) return ok('All required fields filled.')
+        const apiKey = process.env['ANTHROPIC_API_KEY']
+        if (!apiKey) {
+          const list = Object.entries(missingByView).flatMap(([v, fs]) => fs.map((f) => `views.${v}.${f}`))
+          return ok(`Missing fields (set ANTHROPIC_API_KEY to auto-fill):\n${list.map((f) => `• ${f}`).join('\n')}`)
+        }
+        const PROSE = ['implementation','problem','successCriteria','rationale','choice','impact','edgeCases','userGuide','supportNotes','escalationPath','rollback']
+        const needed = Object.entries(missingByView).map(([v, fs]) => `  ${v}: ${fs.join(', ')}`).join('\n')
+        const prompt = `You are a technical writer. Fill missing fields for this node.\n\nNode: ${node.id} (${node.type} — ${node.title})\nStatus: ${node.status}\nDomain: ${node.domain}\nCurrent views: ${JSON.stringify(node.views, null, 2)}\n\nReturn JSON:\n{ "views": { "<viewId>": { "<fieldId>": "<value>" } } }\n\nMissing fields:\n${needed}\n\nRules:\n- Prose fields (${PROSE.join(', ')}): 2-5 clear sentences.\n- Array fields (acceptanceCriteria, testCases, knownLimitations, steps): JSON array of strings.\n- Scalar fields (componentFile, testStrategy): concise string.\n- Return ONLY the JSON object.`
+        try {
+          const Anthropic = (await import('@anthropic-ai/sdk')).default
+          const client = new Anthropic({ apiKey })
+          const msg = await client.messages.create({ model: 'claude-sonnet-4-6', max_tokens: 2048, messages: [{ role: 'user', content: prompt }] })
+          const text = msg.content[0]?.type === 'text' ? msg.content[0].text : ''
+          const jsonMatch = text.match(/\{[\s\S]*\}/)
+          if (!jsonMatch) return ok('Claude returned unexpected format.')
+          const parsed = JSON.parse(jsonMatch[0]) as { views?: Record<string, Record<string, unknown>> }
+          if (!parsed.views) return ok('Claude returned unexpected format.')
+          const updatedViews: Record<string, Record<string, unknown>> = { ...node.views }
+          for (const [viewId, fields] of Object.entries(parsed.views)) {
+            updatedViews[viewId] = { ...(updatedViews[viewId] ?? {}), ...fields }
+          }
+          writeNodeFile(found.path, { ...(node as unknown as Record<string, unknown>), views: updatedViews })
+          const filled = Object.values(missingByView).flat()
+          return ok(`Filled ${filled.length} field(s): ${filled.join(', ')}`)
+        } catch (err) {
+          return ok(`AI fill error: ${err instanceof Error ? err.message : String(err)}`)
+        }
       }
 
       case 'build_graph': {
