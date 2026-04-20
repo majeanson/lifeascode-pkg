@@ -65,6 +65,7 @@
       "optional": true
     }
   },
+  "workspaces": ["playground"],
   "keywords": ["life-as-code", "documentation", "features", "decisions", "knowledge-graph"],
   "license": "MIT",
   "engines": {

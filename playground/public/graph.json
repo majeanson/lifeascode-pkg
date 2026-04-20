@@ -1,0 +1,485 @@
+{
+  "schemaVersion": 2,
+  "project": "lifeascode",
+  "builtAt": "2026-04-20T00:00:00.000Z",
+  "nodes": [
+    {
+      "id": "epic-lifeascode-v1",
+      "type": "epic",
+      "title": "@lifeascode v1.0",
+      "status": "active",
+      "domain": "meta",
+      "schemaVersion": 2,
+      "priority": 1,
+      "tags": ["launch", "milestone"],
+      "children": [
+        "feature-multi-type-nodes",
+        "feature-views-architecture",
+        "feature-markdown-first",
+        "feature-lac-build",
+        "feature-mcp-server",
+        "feature-react-hub",
+        "feature-lac-fill-ai"
+      ],
+      "views": {
+        "product": {
+          "problem": "Existing tools like @majeanson/lac treat every piece of knowledge as a 'feature'. Real projects have decisions, bugs, runbooks, FAQs, and research — each with different lifecycles, audiences, and fields. There was no structured way to capture all of this in one graph.",
+          "successCriteria": "- Developers can document any node type (feature, decision, bug, epic, research, runbook, faq, release)\n- Each node has audience-specific views (dev, product, user, support, tester)\n- `lac build` produces a graph.json consumable by React and MCP tools\n- Claude can navigate and author nodes via 20 MCP tools\n- React hub renders the full knowledge graph in any app",
+          "acceptanceCriteria": [
+            "lac init, create, build, lint, advance, fill, status, search all work end-to-end",
+            "lac-mcp bin starts and all 20 tools respond correctly",
+            "LacHub renders all node types with correct view tabs",
+            "bun run build exits 0 with no TS errors"
+          ],
+          "metrics": "npm weekly downloads, GitHub stars, projects adopting @lifeascode",
+          "milestones": [
+            "Phase 1 — CLI + schema + parser",
+            "Phase 2 — MCP server + React components",
+            "Phase 3 — Adoption in Recall and lac-showcase"
+          ]
+        }
+      }
+    },
+    {
+      "id": "feature-multi-type-nodes",
+      "type": "feature",
+      "title": "Multi-type Node System",
+      "status": "frozen",
+      "domain": "schema",
+      "schemaVersion": 2,
+      "priority": 1,
+      "tags": ["schema", "core"],
+      "parent": "epic-lifeascode-v1",
+      "views": {
+        "dev": {
+          "implementation": "LacNodeSchema in src/schema.ts defines the canonical Zod schema. Eight built-in types ship as JSON definitions in src/node-types/: feature, bug, decision, epic, research, runbook, faq, release. Each type declares its requiredViews, statusTransitions, and class (permanent vs absorbing).\n\nAbsorbing types (bug) must specify `fixes` and `resolvedInto` before advancing to frozen — the lifecycle engine enforces this.",
+          "componentFile": "src/schema.ts",
+          "codeSnippets": [
+            "import { LacNodeSchema } from '@lifeascode/schema'",
+            "const node = LacNodeSchema.parse(rawJson)"
+          ],
+          "edgeCases": [
+            "Bug nodes cannot be frozen without a `fixes` relationship pointing to the affected feature",
+            "Custom types added via lac.config.json merge with built-ins — they do not replace them",
+            "schemaVersion: 2 is required on every node — lac lint reports missing versions"
+          ]
+        },
+        "product": {
+          "problem": "The original @majeanson/lac only supported a single 'feature' type. Teams needed decisions, bugs, runbooks, and FAQs but had to shoehorn them into feature.json fields.",
+          "successCriteria": "Each of the 8 built-in types renders correctly in LacHub with its own icon and view tabs",
+          "impact": "Teams can now capture the full spectrum of project knowledge — not just shipping features, but the reasoning, failures, and operational guides behind them."
+        },
+        "user": {
+          "userGuide": "Every file in your `nodes/` directory has a `type` field. Built-in types: `feature`, `bug`, `decision`, `epic`, `research`, `runbook`, `faq`, `release`.\n\nCreate a new node with:\n```\nlac create decision \"Use PostgreSQL\"\n```\n\nYou can also add custom types in `lac.config.json`:\n```json\n{ \"types\": { \"spike\": { \"label\": \"Spike\", \"requiredViews\": [\"dev\"] } } }\n```",
+          "knownLimitations": "Custom types cannot override the lifecycle rules of built-in types. The `absorbing` class is reserved for built-in bug nodes.",
+          "workarounds": "To add fields to an existing built-in type, extend its view definition in lac.config.json rather than redefining the type."
+        },
+        "tester": {
+          "testCases": [
+            "lac create feature 'Login' → node.md has type: feature",
+            "lac create bug 'Crash' → node.md has type: bug",
+            "lac create decision 'Use Redis' → node.md has type: decision",
+            "lac lint on a node with invalid type → reports error",
+            "LacNodeSchema.parse({ type: 'invalid' }) → throws ZodError"
+          ],
+          "expectedBehavior": "All 8 types parse without error. Invalid types are caught by the schema. Absorbing types enforce relationship requirements at lint time."
+        }
+      }
+    },
+    {
+      "id": "feature-views-architecture",
+      "type": "feature",
+      "title": "Views Architecture",
+      "status": "frozen",
+      "domain": "schema",
+      "schemaVersion": 2,
+      "priority": 1,
+      "tags": ["schema", "core", "ux"],
+      "parent": "epic-lifeascode-v1",
+      "references": ["decision-views-model"],
+      "views": {
+        "dev": {
+          "implementation": "Each node carries a `views` object with up to 5 audience keys: dev, product, user, support, tester. Field definitions live in src/views/*.json. Prose fields (implementation, userGuide, rationale, etc.) are stored as markdown body sections (## view.field) in node.md. Structured fields (arrays, short strings) are stored in YAML frontmatter.",
+          "componentFile": "src/parser.ts",
+          "edgeCases": [
+            "A view key present but empty ({}) does not render a tab in LacFeatureCard",
+            "Prose fields with no content are omitted from markdown output",
+            "Unknown view keys are preserved but not shown in the default tab list"
+          ]
+        },
+        "product": {
+          "problem": "A feature looks completely different to a developer, a product manager, a support agent, and an end user. Merging all that into one flat JSON meant irrelevant noise for every audience.",
+          "successCriteria": "LacHub shows only the tabs relevant to each node. Dev sees implementation + edgeCases. User sees userGuide + knownLimitations. Support sees escalationPath + rollback.",
+          "impact": "Engineers ship documentation that is actually readable by non-engineers — because the right person sees only what matters to them."
+        },
+        "user": {
+          "userGuide": "Each node can have up to 5 view sections. You control what goes in each:\n\n- **dev** — implementation details, code snippets, edge cases\n- **product** — problem, success criteria, acceptance criteria, metrics\n- **user** — user guide, known limitations, workarounds\n- **support** — support notes, escalation path, runbook steps, rollback\n- **tester** — test cases, expected behavior\n\nEmpty views are hidden. Fill only what your team needs.",
+          "knownLimitations": "The five built-in views are fixed. Adding a completely new view type (e.g. 'legal') requires a custom view definition in lac.config.json."
+        }
+      }
+    },
+    {
+      "id": "feature-markdown-first",
+      "type": "feature",
+      "title": "Markdown-first Node Format",
+      "status": "frozen",
+      "domain": "parser",
+      "schemaVersion": 2,
+      "priority": 2,
+      "tags": ["parser", "dx"],
+      "parent": "epic-lifeascode-v1",
+      "references": ["decision-markdown-frontmatter"],
+      "views": {
+        "dev": {
+          "implementation": "src/parser.ts uses gray-matter to split YAML frontmatter from the markdown body. Body sections follow the pattern `## view.field` — e.g. `## dev.implementation`. The PROSE_FIELDS set determines which fields live in the body vs frontmatter. readNodeMd() and writeNodeMd() handle the round-trip cleanly.",
+          "componentFile": "src/parser.ts",
+          "codeSnippets": [
+            "import { readNodeMd, writeNodeMd } from '@lifeascode'",
+            "const node = await readNodeMd('nodes/auth/feature-login/node.md')",
+            "await writeNodeMd('nodes/auth/feature-login/node.md', updatedNode)"
+          ],
+          "edgeCases": [
+            "Empty frontmatter views: {} causes Zod parse failure — parser now defaults views to {} if absent",
+            "## headers inside prose fields are treated as literal markdown, not section delimiters",
+            ".json format is still supported via readNodeFile/writeNodeFile dispatch"
+          ]
+        },
+        "product": {
+          "problem": "JSON files are hostile to prose. Developers avoided writing implementation notes or user guides because they had to escape newlines and quotes. The new .md format makes documentation feel natural.",
+          "successCriteria": "A developer can write a full implementation note with code blocks in node.md and lac build processes it without data loss"
+        },
+        "user": {
+          "userGuide": "Node files are plain Markdown with a YAML header:\n\n```markdown\n---\nid: feature-login\ntype: feature\ntitle: Login\nstatus: active\ndomain: auth\nschemaVersion: 2\n---\n\n## dev.implementation\n\nLogin uses JWT with 15-minute access tokens...\n\n## product.problem\n\nUsers need a secure way to sign in...\n```\n\nProse fields go in `## view.field` sections. Structured fields (arrays, enums) go in the YAML frontmatter.",
+          "knownLimitations": "The ## view.field heading format is reserved. Using it inside a prose field's markdown content is not supported."
+        }
+      }
+    },
+    {
+      "id": "feature-lac-build",
+      "type": "feature",
+      "title": "lac build — Graph Compiler",
+      "status": "frozen",
+      "domain": "cli",
+      "schemaVersion": 2,
+      "priority": 1,
+      "tags": ["cli", "build", "core"],
+      "parent": "epic-lifeascode-v1",
+      "views": {
+        "dev": {
+          "implementation": "src/graph.ts scans the nodes/ directory recursively for node.md (and node.json) files. Each is parsed, validated with Zod, and added to the graph. Edges are derived from relationship fields (parent, children, references, enables, blockedBy, fixes, supersedes). Output: .lac/graph.json (full graph) and .lac/index.json (lightweight search index).",
+          "componentFile": "src/graph.ts",
+          "codeSnippets": [
+            "lac build                  # from project root",
+            "lac build ./my-project     # explicit path",
+            "import { buildGraph } from '@lifeascode/schema'"
+          ],
+          "edgeCases": [
+            "Circular parent relationships are silently ignored (edge is still written, no crash)",
+            "Nodes with parse errors are skipped with a warning — build still exits 0",
+            "Missing .lac/ directory is created automatically"
+          ]
+        },
+        "product": {
+          "problem": "React components and MCP tools need a single computed artifact to read from — not a directory of raw markdown files. The build step bridges authoring format (node.md) and consumption format (graph.json).",
+          "successCriteria": "lac build runs in under 500ms for a 200-node project and produces a valid graph.json consumed by LacHub"
+        },
+        "support": {
+          "steps": [
+            "Run lac build from the project root",
+            "Inspect .lac/graph.json for the full node list",
+            "Check .lac/index.json for the search index",
+            "If a node is missing, check that its node.md has schemaVersion: 2"
+          ],
+          "rollback": "Delete .lac/ and re-run lac build. The directory is always fully regenerated."
+        },
+        "tester": {
+          "testCases": [
+            "Empty nodes/ directory → .lac/graph.json has nodes: []",
+            "13 nodes in fixture → graph.json has 13 nodes",
+            "Node with missing required field → included in graph with lint warning",
+            "Node with type: invalid → skipped, warning logged"
+          ]
+        }
+      }
+    },
+    {
+      "id": "feature-mcp-server",
+      "type": "feature",
+      "title": "MCP Server — 20 Claude Tools",
+      "status": "active",
+      "domain": "mcp",
+      "schemaVersion": 2,
+      "priority": 1,
+      "tags": ["mcp", "ai", "claude"],
+      "parent": "epic-lifeascode-v1",
+      "views": {
+        "dev": {
+          "implementation": "src/mcp/server.ts implements the Model Context Protocol using @modelcontextprotocol/sdk. The server exposes 20 tools via stdio transport. Helpers: findNodeById() (supports partial ID matching), allNodes() (reads graph.json), applyDotPath() (nested field mutation). Each tool validates its input, performs the operation, and returns structured text.",
+          "componentFile": "src/mcp/server.ts",
+          "codeSnippets": [
+            "lac-mcp                          # start MCP server (stdio)",
+            "# In .mcp.json or Claude Desktop config:",
+            "{ \"command\": \"lac-mcp\", \"cwd\": \"/your/project\" }"
+          ],
+          "edgeCases": [
+            "findNodeById falls back to prefix/substring matching when exact ID not found",
+            "write_node_fields uses dot-path notation: 'views.dev.implementation'",
+            "fill_node requires ANTHROPIC_API_KEY env var — fails gracefully if absent"
+          ]
+        },
+        "product": {
+          "problem": "Developers forget to update documentation. Having Claude able to READ and WRITE node fields directly from a conversation means documentation happens as a side-effect of the development conversation itself.",
+          "successCriteria": [
+            "Claude can create, read, update, and advance nodes in a single conversation",
+            "roadmap_view gives Claude a complete picture of project state in one call",
+            "fill_node generates accurate field content from existing node context"
+          ],
+          "impact": "Documentation debt drops to near zero — Claude writes the docs while writing the code."
+        },
+        "user": {
+          "userGuide": "Wire the MCP server into your Claude Code session via `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"lac\": {\n      \"command\": \"lac-mcp\",\n      \"cwd\": \"/path/to/your/project\"\n    }\n  }\n}\n```\n\nThen in a Claude conversation, you can say:\n- \"What's the status of the login feature?\"\n- \"Create a decision node for our auth strategy\"\n- \"Fill in the missing fields for feature-dark-mode\"\n- \"Show me the roadmap\""
+        }
+      }
+    },
+    {
+      "id": "feature-react-hub",
+      "type": "feature",
+      "title": "React Component Library",
+      "status": "active",
+      "domain": "react",
+      "schemaVersion": 2,
+      "priority": 2,
+      "tags": ["react", "ui", "components"],
+      "parent": "epic-lifeascode-v1",
+      "views": {
+        "dev": {
+          "implementation": "8 React components exported from the package root. All inline-styled — zero CSS dependencies. Peer deps: react >=18. LacDataProvider fetches graph.json and distributes data via context. LacHub wraps everything in a single embeddable dashboard.",
+          "componentFile": "src/react/components/LacHub.tsx",
+          "npmPackages": ["react >=18", "react-dom >=18"],
+          "codeSnippets": [
+            "import { LacHub } from '@lifeascode'",
+            "<LacHub dataUrl=\"/.lac/graph.json\" theme=\"dark\" />",
+            "",
+            "// Or use individual components:",
+            "import { LacDataProvider, LacSprintBoard } from '@lifeascode'",
+            "<LacDataProvider dataUrl=\"/.lac/graph.json\">",
+            "  <LacSprintBoard />",
+            "</LacDataProvider>"
+          ],
+          "publicInterface": [
+            "LacHub — full dashboard (Sprint, Guide, Decisions, Success, Search tabs)",
+            "LacFeatureCard — node detail with view tabs, edit mode, relationships",
+            "LacSprintBoard — active/draft nodes sorted by priority",
+            "LacDecisionLog — decision nodes with choice preview",
+            "LacSearch — real-time full-text search",
+            "LacGuide — FAQ + runbook + frozen feature browser",
+            "LacSuccessBoard — nodes with success criteria",
+            "LacHelpPanel — floating/inline node lookup by ID or query",
+            "MarkdownField — inline markdown renderer",
+            "LacDataProvider — context provider + graph.json fetcher"
+          ]
+        },
+        "product": {
+          "problem": "Knowledge graphs are only useful if they're visible. Embedding the hub into your app means developers and stakeholders see living documentation — not a stale wiki that nobody updates.",
+          "successCriteria": [
+            "<LacHub> renders all node types with correct view tabs",
+            "Theme system supports dark/light and custom accent colors",
+            "Individual components work standalone with LacDataProvider"
+          ]
+        },
+        "user": {
+          "userGuide": "Add `@lifeascode` to your React project and drop in the hub:\n\n```tsx\nimport { LacHub } from '@lifeascode'\n\nexport function DocsPage() {\n  return (\n    <LacHub\n      dataUrl=\"/.lac/graph.json\"\n      theme=\"dark\"\n      themeOverrides={{ accent: '#c4a255' }}\n    />\n  )\n}\n```\n\nThe hub reads the `graph.json` produced by `lac build`. Run `lac build` as part of your dev/CI pipeline to keep it fresh."
+        }
+      }
+    },
+    {
+      "id": "feature-lac-fill-ai",
+      "type": "feature",
+      "title": "lac fill — AI Field Completion",
+      "status": "active",
+      "domain": "cli",
+      "schemaVersion": 2,
+      "priority": 3,
+      "tags": ["ai", "cli", "dx"],
+      "parent": "epic-lifeascode-v1",
+      "views": {
+        "dev": {
+          "implementation": "src/cli/commands/fill.ts dynamically imports @anthropic-ai/sdk (optional dep). Reads the target node, identifies empty required fields by comparing against the view definitions, builds a structured prompt, calls claude-sonnet-4-6 with JSON mode, and writes the response back via writeNodeFile.",
+          "componentFile": "src/cli/commands/fill.ts",
+          "codeSnippets": [
+            "ANTHROPIC_API_KEY=sk-... lac fill nodes/auth/feature-login/node.md",
+            "lac fill feature-login   # partial ID also works"
+          ],
+          "edgeCases": [
+            "@anthropic-ai/sdk is an optional peer dep — lac fill fails gracefully with an install hint if absent",
+            "fill never overwrites existing field content — only fills empty fields",
+            "JSON parse failures from the model are caught and reported without corrupting the node file"
+          ]
+        },
+        "product": {
+          "problem": "Developers create nodes but leave most fields blank. The activation energy to write a full userGuide or testCases section is too high during feature development.",
+          "successCriteria": "lac fill populates at least 80% of empty required fields correctly on the first attempt for a well-named feature"
+        }
+      }
+    },
+    {
+      "id": "decision-single-package",
+      "type": "decision",
+      "title": "Ship Everything as One npm Package",
+      "status": "frozen",
+      "domain": "infra",
+      "schemaVersion": 2,
+      "tags": ["architecture", "packaging"],
+      "views": {
+        "dev": {
+          "choice": "Single @lifeascode package with 4 tsup build entries (CLI, schema/types, React, MCP)",
+          "rationale": "The previous @majeanson/lac had packages scattered across a monorepo. Consumers had to install multiple packages and keep versions in sync. A single package with a proper exports map gives the same separation (tree-shakeable React-only import, CLI-only dep for build tools) without the coordination overhead.\n\nSubpackages were explicitly rejected because:\n1. `@lifeascode/react`, `@lifeascode/cli`, `@lifeascode/mcp` creates version drift\n2. Schema types need to be shared — a single source of truth is easier\n3. The MCP server and CLI share the same parser and graph builder",
+          "edgeCases": [
+            "React is a peer dep to avoid bundling it — consumers must have react >=18 installed",
+            "@anthropic-ai/sdk is optional — lac fill works only if the consumer installs it"
+          ]
+        }
+      }
+    },
+    {
+      "id": "decision-markdown-frontmatter",
+      "type": "decision",
+      "title": "Markdown + YAML Frontmatter as Node Format",
+      "status": "frozen",
+      "domain": "schema",
+      "schemaVersion": 2,
+      "tags": ["format", "dx", "parser"],
+      "references": ["feature-markdown-first"],
+      "views": {
+        "dev": {
+          "choice": "node.md with gray-matter YAML frontmatter for structured fields + ## view.field sections for prose",
+          "rationale": "JSON was the v1 format. It had two fatal problems: (1) prose fields (implementation notes, user guides) required escaped newlines and were nearly unreadable in editors; (2) git diffs of JSON blobs are semantically useless.\n\nMarkdown with frontmatter solves both. Structured data (IDs, arrays, enums) stays in YAML where it belongs. Prose lives in markdown sections where it gets syntax highlighting, spell-checking, and readable diffs.\n\nThe ## view.field convention was chosen over YAML embedded markdown because it keeps prose fields fully first-class in the markdown renderer.",
+          "edgeCases": [
+            ".json format is still supported via readNodeFile dispatch — no migration required",
+            "gray-matter strips the frontmatter before parsing sections — section headers within YAML are not confused with prose sections"
+          ]
+        }
+      }
+    },
+    {
+      "id": "decision-views-model",
+      "type": "decision",
+      "title": "Five Built-in Audience Views",
+      "status": "frozen",
+      "domain": "schema",
+      "schemaVersion": 2,
+      "tags": ["architecture", "views"],
+      "views": {
+        "dev": {
+          "choice": "Fixed set of 5 views: dev, product, user, support, tester — extensible via config",
+          "rationale": "A fully dynamic view system would require tooling to define, validate, and render arbitrary view names. The five built-in views cover the audiences present in every software team. Custom views via lac.config.json handle edge cases without making the core schema open-ended.\n\nThe names were chosen for clarity over abbreviation: 'user' (not 'end-user'), 'support' (not 'ops' or 'sre'), 'tester' (not 'qa').",
+          "edgeCases": [
+            "A node may have only 1 or 2 views — tabs are hidden if the view object is empty or absent",
+            "Custom views defined in config appear after the built-in tabs in LacFeatureCard"
+          ]
+        }
+      }
+    },
+    {
+      "id": "runbook-publish-package",
+      "type": "runbook",
+      "title": "Publish @lifeascode to npm",
+      "status": "frozen",
+      "domain": "ops",
+      "schemaVersion": 2,
+      "tags": ["ops", "release"],
+      "views": {
+        "support": {
+          "steps": [
+            "cd lifeascode-pkg",
+            "bun run build — verify exit 0, no TS errors",
+            "bun run typecheck — verify no type errors",
+            "npm publish --dry-run — review file manifest",
+            "Confirm dist/, src/node-types/, src/views/ are included",
+            "Confirm node_modules/ and playground/ are NOT included",
+            "npm publish — publishes @lifeascode to npm registry",
+            "Verify: npm info @lifeascode version"
+          ],
+          "rollback": "npm deprecate @lifeascode@<version> 'Broken release, use @lifeascode@<prev>' — then fix and republish with a patch bump.",
+          "escalationPath": "If publish fails with E403, check that you are logged in (npm whoami) and own the @lifeascode scope."
+        }
+      }
+    },
+    {
+      "id": "faq-migrate-from-old-lac",
+      "type": "faq",
+      "title": "Migrating from @majeanson/lac",
+      "status": "frozen",
+      "domain": "user",
+      "schemaVersion": 2,
+      "tags": ["migration", "faq"],
+      "views": {
+        "user": {
+          "userGuide": "**Is there an automated migration?**\n\nNo. `@lifeascode` is a clean break from `@majeanson/lac`. The data model is fundamentally different (multi-type nodes, views architecture, markdown format).\n\n**Recommended migration path:**\n\n1. Run `lac init` in your project to create `lac.config.json`\n2. For each existing `feature.json`, run `lac create feature \"<title>\"` to create a fresh `node.md`\n3. Copy the relevant content into the appropriate view sections\n4. Run `lac build` to verify everything compiles\n5. Remove the old `features/` directory and `@majeanson/lac` dependency\n\n**Why a clean break?**\n\nThe old format used flat JSON with no concept of audiences. Migrating would mean guessing which fields belong in 'dev' vs 'product' vs 'user' — a judgment call that's better made intentionally by the team.",
+          "knownLimitations": "There is no CLI command to auto-migrate v1 feature.json files.",
+          "workarounds": "For large projects, write a one-off migration script using `@lifeascode/schema` Zod types to read old JSONs and output new node.md files."
+        }
+      }
+    },
+    {
+      "id": "faq-configure-custom-views",
+      "type": "faq",
+      "title": "Adding Custom Node Types and Views",
+      "status": "frozen",
+      "domain": "user",
+      "schemaVersion": 2,
+      "tags": ["config", "customization", "faq"],
+      "views": {
+        "user": {
+          "userGuide": "**Custom types** — add to lac.config.json:\n\n```json\n{\n  \"types\": {\n    \"spike\": {\n      \"label\": \"Spike\",\n      \"class\": \"permanent\",\n      \"requiredViews\": [\"dev\"]\n    }\n  }\n}\n```\n\nThen `lac create spike \"Investigate GraphQL\"` works.\n\n**Custom views** — add extra fields to existing views:\n\n```json\n{\n  \"views\": {\n    \"dev\": {\n      \"fields\": {\n        \"performanceNotes\": { \"type\": \"prose\", \"label\": \"Performance Notes\" }\n      }\n    }\n  }\n}\n```\n\n**extends** — inherit from @lifeascode defaults (recommended):\n\n```json\n{ \"extends\": [\"@lifeascode\"] }\n```",
+          "knownLimitations": "Custom type icons in LacFeatureCard default to '○'. The TYPE_ICONS map is currently hardcoded to built-in types.",
+          "workarounds": "Pass a custom LacFeatureCard wrapper that overrides the icon rendering for your custom types."
+        }
+      }
+    },
+    {
+      "id": "release-v1-0",
+      "type": "release",
+      "title": "@lifeascode v1.0.0",
+      "status": "active",
+      "domain": "product",
+      "schemaVersion": 2,
+      "priority": 1,
+      "tags": ["release", "milestone"],
+      "enables": ["feature-multi-type-nodes", "feature-views-architecture", "feature-markdown-first", "feature-lac-build"],
+      "views": {
+        "user": {
+          "releaseNotes": "**@lifeascode v1.0.0** — Initial public release\n\n### What's new\n\n- **8 node types**: feature, bug, decision, epic, research, runbook, faq, release\n- **5 audience views**: dev, product, user, support, tester — per-node, per-audience\n- **Markdown-first format**: node.md with YAML frontmatter + ## view.field prose sections\n- **`lac` CLI**: init, create, build, lint, advance, fill, status, search\n- **`lac-mcp`**: 20 MCP tools for Claude — full node lifecycle via conversation\n- **React component library**: LacHub, LacFeatureCard, LacSprintBoard, LacDecisionLog, LacSearch, LacGuide, LacSuccessBoard, LacHelpPanel\n- **Configurable**: lac.config.json with extends, custom types, custom views\n\n### Breaking changes from @majeanson/lac\n\nThis is a clean-break v2. No automatic migration. See the migration FAQ.",
+          "knownLimitations": [
+            "lac export (HTML wiki, Docusaurus) is planned for v1.1",
+            "lac serve (live reload) is planned for v1.1",
+            "LacFeatureCard custom type icons not yet configurable"
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    { "from": "epic-lifeascode-v1", "to": "feature-multi-type-nodes", "type": "child" },
+    { "from": "epic-lifeascode-v1", "to": "feature-views-architecture", "type": "child" },
+    { "from": "epic-lifeascode-v1", "to": "feature-markdown-first", "type": "child" },
+    { "from": "epic-lifeascode-v1", "to": "feature-lac-build", "type": "child" },
+    { "from": "epic-lifeascode-v1", "to": "feature-mcp-server", "type": "child" },
+    { "from": "epic-lifeascode-v1", "to": "feature-react-hub", "type": "child" },
+    { "from": "epic-lifeascode-v1", "to": "feature-lac-fill-ai", "type": "child" },
+    { "from": "feature-multi-type-nodes", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-views-architecture", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-markdown-first", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-lac-build", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-mcp-server", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-react-hub", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-lac-fill-ai", "to": "epic-lifeascode-v1", "type": "parent" },
+    { "from": "feature-views-architecture", "to": "decision-views-model", "type": "reference" },
+    { "from": "feature-markdown-first", "to": "decision-markdown-frontmatter", "type": "reference" },
+    { "from": "decision-markdown-frontmatter", "to": "feature-markdown-first", "type": "reference" },
+    { "from": "release-v1-0", "to": "feature-multi-type-nodes", "type": "enables" },
+    { "from": "release-v1-0", "to": "feature-views-architecture", "type": "enables" },
+    { "from": "release-v1-0", "to": "feature-markdown-first", "type": "enables" },
+    { "from": "release-v1-0", "to": "feature-lac-build", "type": "enables" }
+  ]
+}

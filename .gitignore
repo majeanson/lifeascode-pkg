@@ -2,3 +2,5 @@ node_modules/
 dist/
 .lac/
 *.local
+playground/dist/
+playground/node_modules/
