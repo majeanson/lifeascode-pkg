@@ -4,7 +4,8 @@
   "description": "Life-as-Code — structured knowledge graph for software features, decisions, and docs",
   "type": "module",
   "bin": {
-    "lac": "./dist/cli/bin.cjs"
+    "lac": "./dist/cli/bin.cjs",
+    "lac-mcp": "./dist/mcp/server.cjs"
   },
   "exports": {
     ".": {
@@ -36,6 +37,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^12.1.0",
     "gray-matter": "^4.0.3",
     "zod": "^3.23.8"
@@ -56,10 +58,16 @@
     "react-dom": ">=18"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true },
-    "react-dom": { "optional": true }
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "keywords": ["life-as-code", "documentation", "features", "decisions", "knowledge-graph"],
   "license": "MIT",
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }

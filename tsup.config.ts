@@ -48,4 +48,23 @@ export default defineConfig([
     external: ['react', 'react-dom'],
     noExternal: ['zod', 'gray-matter'],
   },
+  // MCP server — CJS only, fully bundled
+  {
+    entry: { 'mcp/server': 'src/mcp/server.ts' },
+    format: ['cjs'],
+    target: 'node18',
+    platform: 'node',
+    bundle: true,
+    minify: false,
+    sourcemap: true,
+    dts: false,
+    banner: { js: '#!/usr/bin/env node' },
+    outDir: 'dist',
+    noExternal: [
+      '@modelcontextprotocol/sdk',
+      'gray-matter',
+      'zod',
+    ],
+    external: ['@anthropic-ai/sdk'],
+  },
 ])
