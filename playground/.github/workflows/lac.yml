@@ -1,0 +1,34 @@
+name: lac
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lac:
+    name: Build & lint nodes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install @lifeascode
+        run: npm install -g @lifeascode
+
+      - name: lac build
+        run: lac build .
+        # Emits .lac/graph.json — fails if any node has a parse error
+
+      - name: lac lint
+        run: lac lint .
+        # Fails on schema errors; warnings for incomplete fields
+
+      - name: lac status
+        run: lac status .
+        # Print health summary — does not fail the build
+        continue-on-error: true

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "project": "@lifeascode playground",
+  "extends": ["@lifeascode"],
+  "types": {},
+  "views": {},
+  "index": {
+    "summaryFields": ["title", "status", "domain", "tags"],
+    "searchFields": ["title", "tags"]
+  },
+  "hub": {
+    "defaultTab": "sprint",
+    "accentColor": "#58a6ff"
+  }
+}

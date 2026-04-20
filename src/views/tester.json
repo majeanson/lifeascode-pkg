@@ -3,8 +3,8 @@
   "label": "Tester",
   "description": "QA perspective — test cases, edge cases, and expected behaviour.",
   "fields": {
-    "testCases": { "type": "array", "label": "Test Cases" },
-    "edgeCases": { "type": "prose", "label": "Edge Cases", "prose": true },
-    "expectedBehavior": { "type": "prose", "label": "Expected Behavior", "prose": true }
+    "testCases": { "type": "array", "label": "Test Cases", "required": true },
+    "edgeCases": { "type": "prose", "label": "Edge Cases", "prose": true, "required": true },
+    "expectedBehavior": { "type": "prose", "label": "Expected Behavior", "prose": true, "required": true }
   }
 }

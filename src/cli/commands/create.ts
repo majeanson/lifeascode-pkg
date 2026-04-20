@@ -1,15 +1,13 @@
 import { existsSync, mkdirSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { Command } from 'commander'
-import { findLacConfig } from '../../config.js'
+import { findLacConfig, loadConfig } from '../../config.js'
 import { writeNodeMd } from '../../parser.js'
 import { generateId } from '../../utils.js'
 
-const KNOWN_TYPES = ['feature', 'bug', 'decision', 'epic', 'research', 'runbook', 'faq', 'release']
-
 export const createCmd = new Command('create')
   .description('Scaffold a new node.md')
-  .argument('<type>', `node type (${KNOWN_TYPES.join(' | ')})`)
+  .argument('<type>', 'node type (feature | bug | decision | epic | research | runbook | faq | release | custom)')
   .argument('<title>', 'node title')
   .option('-d, --domain <domain>', 'domain name', 'core')
   .option('--dir <dir>', 'workspace root', '.')
@@ -20,8 +18,15 @@ export const createCmd = new Command('create')
       console.error('lac.config.json not found. Run "lac init" first.')
       process.exit(1)
     }
+    const config = loadConfig(configPath)
+    if (!config.types[type]) {
+      const valid = Object.keys(config.types).join(' | ')
+      console.error(`Unknown type "${type}". Valid types: ${valid}`)
+      process.exit(1)
+    }
     const id = generateId(type, title)
-    const nodeDir = join(root, 'nodes', opts.domain, id)
+    // Write nodes/ relative to lac.config.json, not cwd
+    const nodeDir = join(dirname(configPath), 'nodes', opts.domain, id)
     const nodePath = join(nodeDir, 'node.md')
     if (existsSync(nodePath)) {
       console.error(`Node already exists: ${nodePath}`)

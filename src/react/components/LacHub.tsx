@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import type { LacGraph } from '../../schema.js'
 import type { LacTheme, LacThemeMode } from '../theme.js'
 import { LacDataProvider } from '../context.js'
 import { useLacData } from '../hooks.js'
@@ -11,7 +12,8 @@ import { LacSearch } from './LacSearch.js'
 export type HubTab = 'sprint' | 'guide' | 'decisions' | 'success' | 'search'
 
 export interface LacHubProps {
-  dataUrl: string
+  dataUrl?: string
+  data?: LacGraph
   defaultTab?: HubTab
   theme?: LacThemeMode | Partial<LacTheme>
   themeOverrides?: Partial<LacTheme>
@@ -28,7 +30,7 @@ const TABS: Array<{ id: HubTab; label: string }> = [
   { id: 'search', label: 'Search' },
 ]
 
-function HubInner({ defaultTab = 'sprint', guideUrl, style, fullscreen }: Omit<LacHubProps, 'dataUrl' | 'theme' | 'themeOverrides'>) {
+function HubInner({ defaultTab = 'sprint', guideUrl, style, fullscreen }: Omit<LacHubProps, 'dataUrl' | 'data' | 'theme' | 'themeOverrides'>) {
   const { theme, loading, error } = useLacData()
   const [tab, setTab] = useState<HubTab>(defaultTab)
 
@@ -87,9 +89,9 @@ function HubInner({ defaultTab = 'sprint', guideUrl, style, fullscreen }: Omit<L
   )
 }
 
-export function LacHub({ dataUrl, defaultTab, theme, themeOverrides, guideUrl, style, fullscreen }: LacHubProps) {
+export function LacHub({ dataUrl, data, defaultTab, theme, themeOverrides, guideUrl, style, fullscreen }: LacHubProps) {
   return (
-    <LacDataProvider dataUrl={dataUrl} theme={theme} themeOverrides={themeOverrides}>
+    <LacDataProvider dataUrl={dataUrl} data={data} theme={theme} themeOverrides={themeOverrides}>
       <HubInner defaultTab={defaultTab} guideUrl={guideUrl} style={style} fullscreen={fullscreen} />
     </LacDataProvider>
   )

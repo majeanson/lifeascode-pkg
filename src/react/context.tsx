@@ -14,15 +14,16 @@ interface LacContextValue {
 const LacContext = createContext<LacContextValue | null>(null)
 
 export interface LacDataProviderProps {
-  dataUrl: string
+  dataUrl?: string
+  data?: LacGraph
   children: React.ReactNode
   theme?: LacThemeMode | Partial<LacTheme>
   themeOverrides?: Partial<LacTheme>
 }
 
-export function LacDataProvider({ dataUrl, children, theme = 'dark', themeOverrides }: LacDataProviderProps) {
-  const [graph, setGraph] = useState<LacGraph | null>(null)
-  const [loading, setLoading] = useState(true)
+export function LacDataProvider({ dataUrl, data: inlineData, children, theme = 'dark', themeOverrides }: LacDataProviderProps) {
+  const [graph, setGraph] = useState<LacGraph | null>(inlineData ?? null)
+  const [loading, setLoading] = useState(!inlineData && !!dataUrl)
   const [error, setError] = useState<string | null>(null)
 
   const resolvedTheme = useMemo(() => {
@@ -31,6 +32,7 @@ export function LacDataProvider({ dataUrl, children, theme = 'dark', themeOverri
   }, [theme, themeOverrides])
 
   const fetchGraph = useCallback(async () => {
+    if (!dataUrl) return
     setLoading(true)
     setError(null)
     try {
@@ -44,7 +46,11 @@ export function LacDataProvider({ dataUrl, children, theme = 'dark', themeOverri
     }
   }, [dataUrl])
 
-  useEffect(() => { fetchGraph() }, [fetchGraph])
+  useEffect(() => {
+    // If inline data is provided, use it directly — no fetch
+    if (inlineData) { setGraph(inlineData); setLoading(false); return }
+    if (dataUrl) fetchGraph()
+  }, [inlineData, dataUrl, fetchGraph])
 
   const value = useMemo(
     () => ({ graph, loading, error, theme: resolvedTheme, refetch: fetchGraph }),

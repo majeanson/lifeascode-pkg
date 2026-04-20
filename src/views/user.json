@@ -3,8 +3,8 @@
   "label": "User",
   "description": "End-user perspective — what this does and how to use it.",
   "fields": {
-    "userGuide": { "type": "prose", "label": "User Guide", "prose": true },
-    "knownLimitations": { "type": "array", "label": "Known Limitations" },
+    "userGuide": { "type": "prose", "label": "User Guide", "prose": true, "required": true },
+    "knownLimitations": { "type": "array", "label": "Known Limitations", "required": true },
     "workarounds": { "type": "array", "label": "Workarounds" },
     "releaseNotes": { "type": "prose", "label": "Release Notes", "prose": true },
     "faq": { "type": "array", "label": "FAQ" }

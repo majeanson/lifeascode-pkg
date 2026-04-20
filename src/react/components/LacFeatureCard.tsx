@@ -17,11 +17,12 @@ export interface LacFeatureCardProps {
   onNodeRequest?: (id: string) => void
   onFileOpen?: (path: string) => void
   onSave?: (id: string, domain: string, fields: Record<string, unknown>) => Promise<void>
+  typeIcons?: Record<string, string>
 }
 
 const VIEW_TABS = ['dev', 'product', 'user', 'support', 'tester']
 const VIEW_LABELS: Record<string, string> = { dev: 'Dev', product: 'Product', user: 'Guide', support: 'Ops', tester: 'Tests' }
-const TYPE_ICONS: Record<string, string> = { epic: '⬡', feature: '◆', decision: '⊙', research: '△', release: '★', runbook: '▶', faq: '◇', bug: '⚠' }
+const BUILTIN_TYPE_ICONS: Record<string, string> = { epic: '⬡', feature: '◆', decision: '⊙', research: '△', release: '★', runbook: '▶', faq: '◇', bug: '⚠' }
 const FIELD_LABELS: Record<string, string> = {
   implementation: 'Implementation', componentFile: 'Component File', codeSnippets: 'Code Snippets',
   edgeCases: 'Edge Cases', choice: 'Choice', rationale: 'Rationale',
@@ -75,7 +76,8 @@ function ArrayItem({ item, theme: t, onFileOpen }: { item: string; theme: LacThe
   return <div style={{ display: 'flex', gap: '6px', fontSize: '13px' }}><span style={{ color: t.textMuted, flexShrink: 0 }}>•</span><span style={{ color: t.text }}>{item}</span></div>
 }
 
-export function LacFeatureCard({ node, theme: t, defaultView = 'dev', onClose, style, nodeIndex, onNodeRequest, onFileOpen, onSave }: LacFeatureCardProps) {
+export function LacFeatureCard({ node, theme: t, defaultView = 'dev', onClose, style, nodeIndex, onNodeRequest, onFileOpen, onSave, typeIcons }: LacFeatureCardProps) {
+  const TYPE_ICONS = typeIcons ? { ...BUILTIN_TYPE_ICONS, ...typeIcons } : BUILTIN_TYPE_ICONS
   const availableViews = VIEW_TABS.filter((v) => node.views[v] && Object.keys(node.views[v]!).length > 0)
   const [activeView, setActiveView] = useState(defaultView)
   const [editMode, setEditMode] = useState(false)
