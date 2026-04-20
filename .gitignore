@@ -1,1 +1,4 @@
-node_modules/\ndist/\n.lac/
+node_modules/
+dist/
+.lac/
+*.local
