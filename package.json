@@ -1,11 +1,11 @@
 {
-  "name": "@lifeascode",
+  "name": "@lifeascode/lac",
   "version": "1.0.0",
   "description": "Life-as-Code — structured knowledge graph for software features, decisions, and docs",
   "type": "module",
   "bin": {
-    "lac": "./dist/cli/bin.cjs",
-    "lac-mcp": "./dist/mcp/server.cjs"
+    "lac": "bin/lac",
+    "lac-mcp": "bin/lac-mcp"
   },
   "exports": {
     ".": {
@@ -27,7 +27,8 @@
   "main": "./dist/react/index.cjs",
   "module": "./dist/react/index.js",
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "scripts": {
     "build": "tsup",
@@ -65,8 +66,16 @@
       "optional": true
     }
   },
-  "workspaces": ["playground"],
-  "keywords": ["life-as-code", "documentation", "features", "decisions", "knowledge-graph"],
+  "workspaces": [
+    "playground"
+  ],
+  "keywords": [
+    "life-as-code",
+    "documentation",
+    "features",
+    "decisions",
+    "knowledge-graph"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"

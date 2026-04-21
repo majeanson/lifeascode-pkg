@@ -5,7 +5,7 @@ Structured knowledge graph for software features, decisions, and docs.
 Document your project as typed nodes (`feature`, `decision`, `bug`, `epic`, `research`, `runbook`, `faq`, `release`) with audience-specific views (`dev`, `product`, `user`, `support`, `tester`). Build a graph, explore it in a React hub, or let Claude navigate it via 20 MCP tools.
 
 ```
-npm install -g @lifeascode
+npm install -g @lifeascode/lac
 ```
 
 ---
@@ -106,17 +106,17 @@ frozen → active (reason required)
 ## React components
 
 ```bash
-npm install @lifeascode react react-dom
+npm install @lifeascode/lac react react-dom
 ```
 
 ```tsx
-import { LacHub } from '@lifeascode'
+import { LacHub } from '@lifeascode/lac'
 
 // All-in-one dashboard
 <LacHub dataUrl="/.lac/graph.json" theme="dark" />
 
 // Or pre-load data (SSR / Next.js)
-import { LacDataProvider, LacSprintBoard } from '@lifeascode'
+import { LacDataProvider, LacSprintBoard } from '@lifeascode/lac'
 
 <LacDataProvider data={graph} theme="dark">
   <LacSprintBoard />
@@ -167,7 +167,7 @@ Wire `lac-mcp` into Claude Code or Claude Desktop:
 {
   "schemaVersion": 2,
   "project": "my-app",
-  "extends": ["@lifeascode"],
+  "extends": ["@lifeascode/lac"],
   "types": {
     "spike": { "id": "spike", "label": "Spike", "class": "permanent", "requiredViews": ["dev"] }
   },
@@ -193,7 +193,7 @@ Wire `lac-mcp` into Claude Code or Claude Desktop:
 cd playground && bun run dev   # http://localhost:5173
 ```
 
-The playground is self-documenting — its fixture `graph.json` contains `@lifeascode` documenting its own features, decisions, and guides as LAC nodes.
+The playground is self-documenting — its fixture `graph.json` contains `@lifeascode/lac` documenting its own features, decisions, and guides as LAC nodes.
 
 ---
 

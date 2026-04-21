@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "project": "Quiet Minds",
-  "extends": ["@lifeascode"],
+  "extends": ["@lifeascode/lac"],
   "types": {},
   "views": {},
   "index": {
