@@ -7,7 +7,7 @@ domain: games
 schemaVersion: 2
 priority: 3
 tags: [shapes, geometry, visual, ages-3-6]
-parent: epic-quiet-minds-v1x0
+parent: feature-game-mechanics-shared-gx00
 views:
   dev:
     componentFile: src/games/ShapeSpotter.tsx
@@ -21,6 +21,17 @@ views:
       - Shapes used: circle, square, triangle, rectangle, oval, star, heart, diamond
       - All shapes are outlined, not filled, so color is not the distinguishing factor
 ---
+
+## user.userGuide
+
+A shape name appears at the top — like **Triangle** or **Circle**.
+Six shapes appear on the screen in a grid.
+
+Find the shape that matches the name and tap it. Only one of the six is correct.
+
+The shapes come in different sizes and orientations — a triangle might be
+pointing up, down, or sideways. That's the challenge: recognising a shape
+even when it looks a little different.
 
 ## product.problem
 

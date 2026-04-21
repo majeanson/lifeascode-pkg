@@ -7,7 +7,7 @@ domain: games
 schemaVersion: 2
 priority: 1
 tags: [counting, numbers, math, ages-3-6]
-parent: epic-quiet-minds-v1x0
+parent: feature-game-mechanics-shared-gx00
 views:
   dev:
     componentFile: src/games/CountTheDots.tsx
@@ -20,6 +20,15 @@ views:
       - After a correct answer, a new card appears automatically after 1.5 seconds
       - No timer, no score pressure, no game over
 ---
+
+## user.userGuide
+
+A card appears with dots on it — anywhere from one to ten.
+Count the dots out loud or with your finger. When you know how many, tap
+that number at the bottom of the screen.
+
+The dots are big and easy to see. If you lose count, start again from the
+beginning — the card stays until you answer.
 
 ## product.problem
 

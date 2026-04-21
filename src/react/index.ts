@@ -4,7 +4,7 @@ export type { LacDataExport } from '../types.js'
 export { LacDataProvider, useLacContext } from './context.js'
 export type { LacDataProviderProps } from './context.js'
 
-export { useLacData, useLacNode, useLacNodesByType, useLacNodesByStatus, useLacNodesByDomain, useLacSearch, useLacSprint, useLacSuccessCriteria } from './hooks.js'
+export { useLacData, useLacNode, useLacNodeWithParent, useLacNodesByType, useLacNodesByStatus, useLacNodesByDomain, useLacSearch, useLacSprint, useLacSuccessCriteria } from './hooks.js'
 
 
 
@@ -43,6 +43,9 @@ export type { LacHelpButtonProps } from './components/LacHelpButton.js'
 
 export { LacAbout } from './components/LacAbout.js'
 export type { LacAboutProps } from './components/LacAbout.js'
+
+export { LacInheritedHelp, LacInheritedHelpButton } from './components/LacInheritedHelp.js'
+export type { LacInheritedHelpProps, LacInheritedHelpButtonProps } from './components/LacInheritedHelp.js'
 
 export { MarkdownField } from './components/MarkdownField.js'
 

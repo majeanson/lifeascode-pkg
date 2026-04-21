@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import {
   LacDataProvider,
   LacAbout,
-  LacHelpButton,
+  LacInheritedHelpButton,
+  LacInheritedHelp,
   LacRoleView,
   LacRoleSwitcher,
   type AudienceRole,
@@ -118,8 +119,8 @@ function HomeScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                 <Badge color={C.muted}>Coming soon</Badge>
               </div>
             </div>
-            {/* Help button — pulls from the LAC node for this game */}
-            <LacHelpButton
+            {/* ? button — shows shared rules (parent) + this game's rules (child) */}
+            <LacInheritedHelpButton
               nodeId={game.lacNodeId}
               role="user"
               allowRoleSwitch
@@ -164,14 +165,16 @@ function GameScreen({ game, onBack }: { game: GameMeta; onBack: () => void }) {
         <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>{game.title}</h2>
         <p style={{ fontSize: '16px', color: C.muted, maxWidth: '360px', margin: '0 auto 32px', lineHeight: 1.6 }}>{game.tagline}</p>
 
-        {/* Game instructions pulled from LAC node */}
+        {/* Inherited help — shows shared game rules then this game's specifics */}
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '24px', textAlign: 'left', marginBottom: '16px' }}>
-          <LacRoleView
+          <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: C.muted, marginBottom: '16px' }}>
+            How to play
+          </div>
+          <LacInheritedHelp
+            nodeId={game.lacNodeId}
             role="user"
-            nodeTypes={['feature']}
-            domain="games"
-            layout="flat"
-            emptyMessage="Instructions coming soon."
+            showRolePicker
+            showConnector
             colors={LAC_COLORS}
           />
         </div>

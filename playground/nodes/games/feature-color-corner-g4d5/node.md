@@ -7,7 +7,7 @@ domain: games
 schemaVersion: 2
 priority: 4
 tags: [colors, visual, ages-3-5]
-parent: epic-quiet-minds-v1x0
+parent: feature-game-mechanics-shared-gx00
 views:
   dev:
     componentFile: src/games/ColorCorner.tsx
@@ -21,6 +21,17 @@ views:
       - Colors included: red, orange, yellow, green, blue, purple, pink, brown, black, white
       - Color name is always shown in the swatch (accessible for colorblind children per decision-accessible-palette-d3c4)
 ---
+
+## user.userGuide
+
+A color name appears at the top — like **Blue** or **Orange**.
+Four big color swatches appear below it, each with its name written inside.
+
+Tap the swatch that matches the color named at the top.
+
+Because the name is written inside every swatch, you can always double-check:
+find the swatch whose name matches the word at the top. This helps children
+connect the word they see with the color they're learning to recognise.
 
 ## product.problem
 

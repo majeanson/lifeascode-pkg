@@ -7,7 +7,7 @@ domain: games
 schemaVersion: 2
 priority: 5
 tags: [patterns, logic, sequencing, ages-4-7]
-parent: epic-quiet-minds-v1x0
+parent: feature-game-mechanics-shared-gx00
 views:
   dev:
     componentFile: src/games/WhatComesNext.tsx
@@ -21,6 +21,20 @@ views:
       - Patterns progress from AB (2-element repeat) to ABC and AABB as the session continues
       - No levels, no difficulty selector — the game gently increases complexity automatically
 ---
+
+## user.userGuide
+
+A row of shapes or colors appears with a question mark at the end.
+Look at the shapes from left to right. Can you see the pattern?
+
+Three choices appear below. Tap the one that continues the pattern correctly.
+
+When you get it right, the completed pattern is shown for a moment before
+the next one appears — so you can see the full sequence and feel the pattern
+click into place.
+
+The patterns start simple (two shapes that repeat) and gradually become
+more interesting (three shapes, or pairs that repeat).
 
 ## product.problem
 

@@ -59,6 +59,15 @@ export function useLacSprint(): LacNode[] {
   }, [graph])
 }
 
+export function useLacNodeWithParent(id: string): { node: LacNode | undefined; parent: LacNode | undefined } {
+  const { graph } = useLacContext()
+  return useMemo(() => {
+    const node = graph?.nodes.find((n) => n.id === id)
+    const parent = node?.parent ? graph?.nodes.find((n) => n.id === node.parent) : undefined
+    return { node, parent }
+  }, [graph, id])
+}
+
 export function useLacSuccessCriteria(): LacNode[] {
   const { graph } = useLacContext()
   return useMemo(() => {

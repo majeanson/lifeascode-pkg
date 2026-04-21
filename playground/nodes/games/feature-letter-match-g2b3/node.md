@@ -7,7 +7,7 @@ domain: games
 schemaVersion: 2
 priority: 2
 tags: [alphabet, letters, reading, ages-4-7]
-parent: epic-quiet-minds-v1x0
+parent: feature-game-mechanics-shared-gx00
 views:
   dev:
     componentFile: src/games/LetterMatch.tsx
@@ -20,6 +20,16 @@ views:
       - All 26 letters included; order is randomized each session
       - Picture labels are always shown in text below the image (supports non-readers learning letter-word connection)
 ---
+
+## user.userGuide
+
+A big letter appears at the top — like **A** or **B** or **T**.
+Four pictures appear below it. Each picture has its name written underneath.
+
+Find the picture whose name starts with the same letter. Tap it.
+
+The name is always written under the picture, so you can look at the first
+letter of the word and compare it to the letter at the top.
 
 ## product.problem
 
