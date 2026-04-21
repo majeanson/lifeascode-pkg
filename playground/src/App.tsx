@@ -1,14 +1,25 @@
 import React, { useState } from 'react'
+import {
+  LacDataProvider,
+  LacAbout,
+  LacHelpButton,
+  LacRoleView,
+  LacRoleSwitcher,
+  type AudienceRole,
+} from '@lifeascode/lac'
 
-// ─── palette (matches decision-accessible-palette-d3c4) ──────────────────────
-const BG      = '#f9f7f2'
-const SURFACE = '#ffffff'
-const BORDER  = '#e0dbd3'
-const TEXT     = '#1a1a2e'
-const MUTED    = '#6b6570'
-const ACCENT   = '#7ec8a4'
-const ACCENT_DK = '#4da87e'
-const DANGER   = '#c94040'
+// ─── palette (from decision-accessible-palette-d3c4) ─────────────────────────
+const C = {
+  bg:       '#f9f7f2',
+  surface:  '#ffffff',
+  border:   '#e0dbd3',
+  text:     '#1a1a2e',
+  muted:    '#6b6570',
+  accent:   '#7ec8a4',
+  accentDk: '#4da87e',
+}
+
+const LAC_COLORS = { bg: C.bg, surface: C.surface, border: C.border, text: C.text, muted: C.muted, accent: C.accent }
 
 // ─── game registry ────────────────────────────────────────────────────────────
 type GameId = 'count-the-dots' | 'letter-match' | 'shape-spotter' | 'color-corner' | 'what-comes-next'
@@ -25,301 +36,204 @@ interface GameMeta {
 }
 
 const GAMES: GameMeta[] = [
-  {
-    id: 'count-the-dots',
-    title: 'Count the Dots',
-    emoji: '🟦',
-    tagline: 'How many dots do you see? Count them and tap the right number.',
-    ageRange: '3 – 6',
-    lacNodeId: 'feature-count-the-dots-g1a2',
-    status: 'coming-soon',
-  },
-  {
-    id: 'letter-match',
-    title: 'Letter Match',
-    emoji: '🔤',
-    tagline: 'A big letter appears. Which picture starts with that letter?',
-    ageRange: '4 – 7',
-    lacNodeId: 'feature-letter-match-g2b3',
-    status: 'coming-soon',
-  },
-  {
-    id: 'shape-spotter',
-    title: 'Shape Spotter',
-    emoji: '🔷',
-    tagline: 'Six shapes on the screen. Can you find the triangle in the crowd?',
-    ageRange: '3 – 6',
-    lacNodeId: 'feature-shape-spotter-g3c4',
-    status: 'coming-soon',
-  },
-  {
-    id: 'color-corner',
-    title: 'Color Corner',
-    emoji: '🎨',
-    tagline: 'A color name at the top. Tap the swatch that matches.',
-    ageRange: '3 – 5',
-    lacNodeId: 'feature-color-corner-g4d5',
-    status: 'coming-soon',
-  },
-  {
-    id: 'what-comes-next',
-    title: 'What Comes Next?',
-    emoji: '❓',
-    tagline: 'Shapes in a row with a pattern. What belongs at the end?',
-    ageRange: '4 – 7',
-    lacNodeId: 'feature-what-comes-next-g5e6',
-    status: 'coming-soon',
-  },
+  { id: 'count-the-dots',   title: 'Count the Dots',    emoji: '🔵', tagline: 'How many dots? Count and tap the right number.',        ageRange: '3 – 6', lacNodeId: 'feature-count-the-dots-g1a2',  status: 'coming-soon' },
+  { id: 'letter-match',     title: 'Letter Match',      emoji: '🔤', tagline: 'Which picture starts with this letter?',                 ageRange: '4 – 7', lacNodeId: 'feature-letter-match-g2b3',    status: 'coming-soon' },
+  { id: 'shape-spotter',    title: 'Shape Spotter',     emoji: '🔷', tagline: 'Find the matching shape hidden in the grid.',            ageRange: '3 – 6', lacNodeId: 'feature-shape-spotter-g3c4',  status: 'coming-soon' },
+  { id: 'color-corner',     title: 'Color Corner',      emoji: '🎨', tagline: 'A color name appears. Tap the right swatch.',            ageRange: '3 – 5', lacNodeId: 'feature-color-corner-g4d5',   status: 'coming-soon' },
+  { id: 'what-comes-next',  title: 'What Comes Next?',  emoji: '❓', tagline: 'Shapes in a row with a pattern. What belongs at the end?', ageRange: '4 – 7', lacNodeId: 'feature-what-comes-next-g5e6', status: 'coming-soon' },
 ]
 
-// ─── styles (inline — no CSS deps per project conventions) ───────────────────
-const S = {
-  page: {
-    minHeight: '100vh',
-    background: BG,
-    color: TEXT,
-    fontFamily: '"Georgia", "Times New Roman", serif',
-    padding: '0',
-    margin: '0',
-  } as React.CSSProperties,
+// ─── screen types ─────────────────────────────────────────────────────────────
+type Screen = { type: 'home' } | { type: 'game'; game: GameMeta } | { type: 'about' } | { type: 'docs' }
 
-  header: {
-    textAlign: 'center' as const,
-    padding: '48px 24px 32px',
-    borderBottom: `1px solid ${BORDER}`,
-    background: SURFACE,
-  },
-
-  logo: {
-    fontSize: '40px',
-    lineHeight: 1,
-    marginBottom: '12px',
-  },
-
-  title: {
-    fontSize: '28px',
-    fontWeight: 700,
-    color: TEXT,
-    margin: '0 0 8px',
-    letterSpacing: '-0.5px',
-  },
-
-  subtitle: {
-    fontSize: '16px',
-    color: MUTED,
-    margin: 0,
-    fontStyle: 'italic',
-    fontWeight: 400,
-  },
-
-  grid: {
-    maxWidth: '640px',
-    margin: '40px auto',
-    padding: '0 20px',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '16px',
-  },
-
-  card: (active: boolean): React.CSSProperties => ({
-    background: SURFACE,
-    border: `1px solid ${active ? ACCENT : BORDER}`,
-    borderRadius: '12px',
-    padding: '20px 24px',
-    cursor: active ? 'pointer' : 'default',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px',
-  }),
-
-  cardEmoji: {
-    fontSize: '36px',
-    flexShrink: 0,
-    width: '48px',
-    textAlign: 'center' as const,
-  },
-
-  cardBody: {
-    flex: 1,
-  },
-
-  cardTitle: {
-    fontSize: '18px',
-    fontWeight: 600,
-    color: TEXT,
-    margin: '0 0 4px',
-  },
-
-  cardTagline: {
-    fontSize: '14px',
-    color: MUTED,
-    margin: '0 0 8px',
-    lineHeight: 1.5,
-  },
-
-  cardMeta: {
-    display: 'flex',
-    gap: '10px',
-    alignItems: 'center',
-    flexWrap: 'wrap' as const,
-  },
-
-  badge: (variant: 'age' | 'soon' | 'ready'): React.CSSProperties => ({
-    fontSize: '11px',
-    fontWeight: 600,
-    padding: '2px 8px',
-    borderRadius: '20px',
-    letterSpacing: '0.3px',
-    background:
-      variant === 'age'  ? 'rgba(126,200,164,0.15)' :
-      variant === 'ready' ? ACCENT :
-      'rgba(0,0,0,0.06)',
-    color:
-      variant === 'age'   ? ACCENT_DK :
-      variant === 'ready' ? '#fff'    :
-      MUTED,
-    border:
-      variant === 'age'   ? `1px solid rgba(126,200,164,0.3)` :
-      variant === 'ready' ? 'none' :
-      `1px solid ${BORDER}`,
-  }),
-
-  footer: {
-    textAlign: 'center' as const,
-    padding: '32px 24px 48px',
-    fontSize: '13px',
-    color: MUTED,
-    borderTop: `1px solid ${BORDER}`,
-    marginTop: '24px',
-  },
-
-  footerLink: {
-    color: ACCENT_DK,
-    textDecoration: 'none',
-    fontWeight: 500,
-  },
-
-  comingSoonOverlay: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '60vh',
-    gap: '16px',
-    padding: '40px 24px',
-    textAlign: 'center' as const,
-  },
-
-  backBtn: {
-    background: 'none',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '8px',
-    padding: '8px 16px',
-    fontSize: '14px',
-    color: MUTED,
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
+// ─── styles ───────────────────────────────────────────────────────────────────
+const S: Record<string, React.CSSProperties> = {
+  page:    { minHeight: '100vh', background: C.bg, color: C.text, fontFamily: '"Georgia", serif', margin: 0, padding: 0 },
+  header:  { textAlign: 'center', padding: '48px 24px 32px', borderBottom: `1px solid ${C.border}`, background: C.surface },
+  grid:    { maxWidth: '640px', margin: '40px auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' },
+  card:    { background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '20px' },
+  footer:  { textAlign: 'center', padding: '32px 24px 48px', fontSize: '13px', color: C.muted, borderTop: `1px solid ${C.border}`, marginTop: '24px' },
+  link:    { color: C.accentDk, textDecoration: 'none', fontWeight: 500, cursor: 'pointer' },
+  backBtn: { background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', padding: '8px 16px', fontSize: '14px', color: C.muted, cursor: 'pointer' },
+  content: { maxWidth: '640px', margin: '0 auto', padding: '32px 20px' },
 }
 
-// ─── game placeholder screen ──────────────────────────────────────────────────
-function GamePlaceholder({ game, onBack }: { game: GameMeta; onBack: () => void }) {
+function Badge({ children, color = C.muted }: { children: React.ReactNode; color?: string }) {
   return (
-    <div style={S.page}>
-      <div style={{ ...S.header, textAlign: 'left', padding: '20px 24px' }}>
-        <button style={S.backBtn} onClick={onBack}>← Back</button>
-      </div>
-      <div style={S.comingSoonOverlay}>
-        <div style={{ fontSize: '56px' }}>{game.emoji}</div>
-        <h2 style={{ ...S.title, fontSize: '24px' }}>{game.title}</h2>
-        <p style={{ ...S.subtitle, maxWidth: '360px', fontSize: '15px', color: MUTED }}>
-          {game.tagline}
-        </p>
-        <div style={{ marginTop: '8px', padding: '16px 24px', background: SURFACE, borderRadius: '10px', border: `1px solid ${BORDER}`, maxWidth: '360px' }}>
-          <p style={{ margin: 0, fontSize: '13px', color: MUTED, lineHeight: 1.6 }}>
-            This game is being built openly.<br />
-            <a
-              href="#"
-              style={S.footerLink}
-              onClick={(e) => { e.preventDefault(); window.open('http://localhost:3737', '_blank') }}
-            >
-              See the story behind it →
-            </a>
-          </p>
-        </div>
-        <p style={{ fontSize: '12px', color: BORDER, marginTop: '4px' }}>
-          LAC node: <code style={{ color: MUTED }}>{game.lacNodeId}</code>
-        </p>
-      </div>
+    <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '20px', background: `${color}18`, color, border: `1px solid ${color}30` }}>
+      {children}
+    </span>
+  )
+}
+
+function NavBar({ onNavigate, screen }: { onNavigate: (s: Screen) => void; screen: Screen }) {
+  const active = screen.type
+  const items: Array<{ id: Screen['type']; label: string }> = [
+    { id: 'home', label: 'Games' },
+    { id: 'about', label: 'About' },
+    { id: 'docs', label: 'Docs' },
+  ]
+  return (
+    <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '0 24px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+      <span style={{ fontWeight: 700, fontSize: '14px', color: C.text, marginRight: '16px', padding: '14px 0' }}>🌿 Quiet Minds</span>
+      {items.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => onNavigate({ type: item.id } as Screen)}
+          style={{ background: 'none', border: 'none', padding: '14px 12px', fontSize: '14px', cursor: 'pointer', color: active === item.id ? C.accentDk : C.muted, fontWeight: active === item.id ? 600 : 400, borderBottom: active === item.id ? `2px solid ${C.accent}` : '2px solid transparent' }}
+        >
+          {item.label}
+        </button>
+      ))}
     </div>
   )
 }
 
 // ─── home screen ──────────────────────────────────────────────────────────────
-function Home({ onSelect }: { onSelect: (g: GameMeta) => void }) {
+function HomeScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   return (
     <div style={S.page}>
       <header style={S.header}>
-        <div style={S.logo}>🌿</div>
-        <h1 style={S.title}>Quiet Minds</h1>
-        <p style={S.subtitle}>Calm educational games for curious little minds</p>
+        <div style={{ fontSize: '40px', lineHeight: 1, marginBottom: '12px' }}>🌿</div>
+        <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Quiet Minds</h1>
+        <p style={{ fontSize: '16px', color: C.muted, margin: 0, fontStyle: 'italic' }}>Calm educational games for curious little minds</p>
       </header>
 
       <div style={S.grid}>
         {GAMES.map((game) => (
           <div
             key={game.id}
-            style={S.card(game.status === 'ready')}
-            onClick={() => onSelect(game)}
+            style={{ ...S.card, cursor: 'pointer' }}
             role="button"
             tabIndex={0}
-            aria-label={game.title}
-            onKeyDown={(e) => e.key === 'Enter' && onSelect(game)}
+            onClick={() => onNavigate({ type: 'game', game })}
+            onKeyDown={(e) => e.key === 'Enter' && onNavigate({ type: 'game', game })}
           >
-            <div style={S.cardEmoji}>{game.emoji}</div>
-            <div style={S.cardBody}>
-              <h2 style={S.cardTitle}>{game.title}</h2>
-              <p style={S.cardTagline}>{game.tagline}</p>
-              <div style={S.cardMeta}>
-                <span style={S.badge('age')}>Ages {game.ageRange}</span>
-                {game.status === 'coming-soon'
-                  ? <span style={S.badge('soon')}>Coming soon</span>
-                  : <span style={S.badge('ready')}>Play</span>
-                }
+            <div style={{ fontSize: '36px', width: '48px', textAlign: 'center', flexShrink: 0 }}>{game.emoji}</div>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 4px' }}>{game.title}</h2>
+              <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 8px', lineHeight: 1.5 }}>{game.tagline}</p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Badge color={C.accentDk}>Ages {game.ageRange}</Badge>
+                <Badge color={C.muted}>Coming soon</Badge>
               </div>
             </div>
+            {/* Help button — pulls from the LAC node for this game */}
+            <LacHelpButton
+              nodeId={game.lacNodeId}
+              role="user"
+              allowRoleSwitch
+              label="?"
+              position="inline"
+              colors={LAC_COLORS}
+            />
           </div>
         ))}
       </div>
 
       <footer style={S.footer}>
-        No sound. No flash. No ads. No accounts.
+        No sound · No flash · No ads · No accounts
         <br />
-        <a
-          href="http://localhost:3737"
-          target="_blank"
-          rel="noreferrer"
-          style={S.footerLink}
+        <span
+          style={S.link}
+          onClick={() => onNavigate({ type: 'about' })}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && onNavigate({ type: 'about' })}
         >
-          How this was built →
-        </a>
-        {' '}(run <code>lac serve .</code> from playground/)
+          Why we built this →
+        </span>
       </footer>
+    </div>
+  )
+}
+
+// ─── game placeholder / actual game screen ────────────────────────────────────
+function GameScreen({ game, onBack }: { game: GameMeta; onBack: () => void }) {
+  if (game.status === 'ready' && game.component) {
+    const GameComponent = game.component
+    return <GameComponent />
+  }
+  return (
+    <div style={S.page}>
+      <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+        <button style={S.backBtn} onClick={onBack}>← Back</button>
+      </div>
+      <div style={{ ...S.content, textAlign: 'center', paddingTop: '64px' }}>
+        <div style={{ fontSize: '56px', marginBottom: '16px' }}>{game.emoji}</div>
+        <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>{game.title}</h2>
+        <p style={{ fontSize: '16px', color: C.muted, maxWidth: '360px', margin: '0 auto 32px', lineHeight: 1.6 }}>{game.tagline}</p>
+
+        {/* Game instructions pulled from LAC node */}
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '24px', textAlign: 'left', marginBottom: '16px' }}>
+          <LacRoleView
+            role="user"
+            nodeTypes={['feature']}
+            domain="games"
+            layout="flat"
+            emptyMessage="Instructions coming soon."
+            colors={LAC_COLORS}
+          />
+        </div>
+
+        <p style={{ fontSize: '12px', color: C.border }}>
+          <span style={{ color: C.muted }}>Being built openly. Node: </span>
+          <code style={{ color: C.muted, fontSize: '11px' }}>{game.lacNodeId}</code>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── about screen — full story, role-switchable ───────────────────────────────
+function AboutScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div style={S.page}>
+      <div style={S.content}>
+        <LacAbout
+          showRoleSwitcher
+          layout="accordion"
+          colors={LAC_COLORS}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── docs screen — full role-based docs, all audiences ────────────────────────
+function DocsScreen() {
+  const [role, setRole] = useState<AudienceRole>('user')
+  return (
+    <div style={S.page}>
+      <div style={S.content}>
+        <div style={{ marginBottom: '8px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 4px' }}>Documentation</h2>
+          <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 20px' }}>
+            Everything about Quiet Minds, filtered by who you are.
+          </p>
+          <LacRoleSwitcher value={role} onChange={setRole} colors={LAC_COLORS} />
+        </div>
+        <div style={{ marginTop: '32px' }}>
+          <LacRoleView role={role} layout="accordion" colors={LAC_COLORS} />
+        </div>
+      </div>
     </div>
   )
 }
 
 // ─── app root ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [selected, setSelected] = useState<GameMeta | null>(null)
+  const [screen, setScreen] = useState<Screen>({ type: 'home' })
 
-  if (selected) {
-    if (selected.status === 'ready' && selected.component) {
-      const GameComponent = selected.component
-      return <GameComponent />
-    }
-    return <GamePlaceholder game={selected} onBack={() => setSelected(null)} />
-  }
+  const navigate = (s: Screen) => setScreen(s)
 
-  return <Home onSelect={setSelected} />
+  return (
+    <LacDataProvider dataUrl="/.lac/graph.json" theme="light" themeOverrides={{ accent: C.accent }}>
+      <NavBar onNavigate={navigate} screen={screen} />
+      {screen.type === 'home'  && <HomeScreen onNavigate={navigate} />}
+      {screen.type === 'game'  && <GameScreen game={screen.game} onBack={() => navigate({ type: 'home' })} />}
+      {screen.type === 'about' && <AboutScreen onBack={() => navigate({ type: 'home' })} />}
+      {screen.type === 'docs'  && <DocsScreen />}
+    </LacDataProvider>
+  )
 }

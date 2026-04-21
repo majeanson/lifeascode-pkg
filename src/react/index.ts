@@ -32,6 +32,18 @@ export type { LacGuideProps } from './components/LacGuide.js'
 export { LacHelpPanel } from './components/LacHelpPanel.js'
 export type { LacHelpPanelProps } from './components/LacHelpPanel.js'
 
+export { LacNodeField } from './components/LacNodeField.js'
+export type { LacNodeFieldProps, LacNodeFieldAs } from './components/LacNodeField.js'
+
+export { LacRoleView, LacRoleSwitcher, ROLE_META } from './components/LacRoleView.js'
+export type { LacRoleViewProps, LacRoleSwitcherProps, AudienceRole } from './components/LacRoleView.js'
+
+export { LacHelpButton } from './components/LacHelpButton.js'
+export type { LacHelpButtonProps } from './components/LacHelpButton.js'
+
+export { LacAbout } from './components/LacAbout.js'
+export type { LacAboutProps } from './components/LacAbout.js'
+
 export { MarkdownField } from './components/MarkdownField.js'
 
 export type { LacTheme, LacThemeMode } from './theme.js'
