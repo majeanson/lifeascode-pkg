@@ -7,6 +7,9 @@ domain: design
 schemaVersion: 2
 priority: 3
 tags: [accessibility, design, color, colorblindness]
+references:
+  - feature-color-corner-g4d5
+  - feature-shape-spotter-g3c4
 ---
 
 ## dev.choice

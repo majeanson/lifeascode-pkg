@@ -36,11 +36,17 @@ const FIELD_LABELS: Record<string, string> = {
   metrics:            'Metrics',
   impact:             'Impact',
   supportNotes:       'Support Notes',
-  escalationPath:     'Escalation Path',
+  escalationPath:     'Need Help?',
   rollback:           'Rollback',
   testCases:          'Test Cases',
   expectedBehavior:   'Expected Behavior',
   steps:              'Steps',
+}
+
+// Override label per node type — only include entries that differ from FIELD_LABELS
+const FIELD_LABELS_BY_TYPE: Record<string, Partial<Record<string, string>>> = {
+  faq:     { userGuide: '' },        // no header for FAQ answers — content flows directly
+  runbook: { userGuide: 'Overview' },
 }
 
 // Tab title shown to readers for each view
@@ -48,7 +54,7 @@ const TAB_LABELS: Record<string, string> = {
   user:    'For Players',
   product: 'Product',
   dev:     'Developer',
-  support: 'Support',
+  support: 'Guide',
   tester:  'Testing',
 }
 
@@ -74,7 +80,7 @@ const TYPE_ICONS: Record<string, string> = {
   release:  '🏷️',
 }
 
-// Custom display order for domains — lower index = earlier in ToC
+// Custom display order for domains
 const DOMAIN_ORDER: Record<string, number> = {
   vision:  0,
   games:   1,
@@ -98,16 +104,43 @@ const STATUS_LABEL: Record<string, string> = {
   archived: 'Archived',
 }
 
+// Field render order within each view — lower = rendered first
+const FIELD_PRIORITY: Record<string, number> = {
+  // user view: answer/guide before caveats
+  userGuide:          1,
+  releaseNotes:       2,
+  workarounds:        3,
+  knownLimitations:   20,
+  // dev view: context → implementation → edge cases
+  componentFile:      1,
+  implementation:     2,
+  codeSnippets:       3,
+  edgeCases:          4,
+  // product view: narrative → criteria
+  problem:            1,
+  successCriteria:    2,
+  acceptanceCriteria: 3,
+  impact:             4,
+  metrics:            5,
+  // decision view: choice before rationale
+  choice:             1,
+  rationale:          2,
+  // support view: steps → rollback → escalation last
+  steps:              1,
+  rollback:           2,
+  supportNotes:       3,
+  escalationPath:     10,
+}
+
+// Node types where the meta strip (type · status · tags) adds noise for the audience
+const HIDE_META_STRIP = new Set(['faq', 'epic'])
+
 // ─── render a field value to markdown ────────────────────────────────────────
 function renderField(key: string, value: unknown): string {
   if (typeof value === 'string') return value
   if (Array.isArray(value)) {
-    if (key === 'acceptanceCriteria') {
-      return value.map((item) => `* [ ] ${String(item)}`).join('\n')
-    }
-    if (key === 'steps') {
-      return value.map((item, i) => `${i + 1}. ${String(item)}`).join('\n')
-    }
+    if (key === 'acceptanceCriteria') return value.map((item) => `* [ ] ${String(item)}`).join('\n')
+    if (key === 'steps') return value.map((item, i) => `${i + 1}. ${String(item)}`).join('\n')
     return value.map((item) => `* ${String(item)}`).join('\n')
   }
   if (value && typeof value === 'object') {
@@ -118,47 +151,48 @@ function renderField(key: string, value: unknown): string {
   return String(value ?? '')
 }
 
-// ─── render one view's fields as markdown lines ───────────────────────────────
-function renderViewFields(viewId: string, viewData: Record<string, unknown>): string {
+// ─── render one view's fields, ordered and with type-aware labels ─────────────
+function renderViewFields(viewId: string, viewData: Record<string, unknown>, nodeType: string): string {
   const lines: string[] = []
+  const typeOverrides = FIELD_LABELS_BY_TYPE[nodeType] ?? {}
 
-  for (const [fieldId, fieldValue] of Object.entries(viewData)) {
+  // Sort fields by FIELD_PRIORITY, then insertion order
+  const sorted = Object.entries(viewData).sort(
+    ([a], [b]) => (FIELD_PRIORITY[a] ?? 5) - (FIELD_PRIORITY[b] ?? 5)
+  )
+
+  for (const [fieldId, fieldValue] of sorted) {
     if (fieldValue === undefined || fieldValue === null || fieldValue === '') continue
     if (Array.isArray(fieldValue) && fieldValue.length === 0) continue
 
-    const label = FIELD_LABELS[fieldId] ?? fieldId
+    // Determine label — empty string means render content with no heading
+    const labelOverride = typeOverrides[fieldId]
+    const label = labelOverride !== undefined ? labelOverride : (FIELD_LABELS[fieldId] ?? fieldId)
+    const rendered = renderField(fieldId, fieldValue)
 
-    // Fields that get special GitBook blocks
-    if (fieldId === 'successCriteria') {
-      lines.push(`### ${label}`)
-      lines.push('')
-      lines.push('{% hint style="success" %}')
-      lines.push(renderField(fieldId, fieldValue))
-      lines.push('{% endhint %}')
-    } else if (fieldId === 'knownLimitations') {
-      lines.push(`### ${label}`)
-      lines.push('')
+    if (fieldId === 'knownLimitations') {
+      if (label) { lines.push(`### ${label}`); lines.push('') }
       lines.push('{% hint style="warning" %}')
-      lines.push(renderField(fieldId, fieldValue))
+      lines.push(rendered)
+      lines.push('{% endhint %}')
+    } else if (fieldId === 'successCriteria') {
+      if (label) { lines.push(`### ${label}`); lines.push('') }
+      lines.push('{% hint style="success" %}')
+      lines.push(rendered)
       lines.push('{% endhint %}')
     } else if (fieldId === 'escalationPath') {
-      lines.push(`### ${label}`)
+      // Rendered inline at the bottom of the support view — no section header
+      lines.push('---')
       lines.push('')
       lines.push('{% hint style="info" %}')
-      lines.push(renderField(fieldId, fieldValue))
+      lines.push(`**Need help?** ${rendered}`)
       lines.push('{% endhint %}')
     } else if (fieldId === 'componentFile') {
-      lines.push(`### ${label}`)
-      lines.push('')
-      lines.push(`\`${renderField(fieldId, fieldValue)}\``)
-    } else if (fieldId === 'implementation') {
-      lines.push(`### ${label}`)
-      lines.push('')
-      lines.push(renderField(fieldId, fieldValue))
+      if (label) { lines.push(`### ${label}`); lines.push('') }
+      lines.push(`\`${rendered}\``)
     } else {
-      lines.push(`### ${label}`)
-      lines.push('')
-      lines.push(renderField(fieldId, fieldValue))
+      if (label) { lines.push(`### ${label}`); lines.push('') }
+      lines.push(rendered)
     }
 
     lines.push('')
@@ -175,16 +209,16 @@ function renderViews(node: LacNode, viewsToShow: string[]): string {
     const viewData = node.views[viewId]
     if (!viewData || Object.keys(viewData).length === 0) continue
 
-    const content = renderViewFields(viewId, viewData as Record<string, unknown>)
+    const content = renderViewFields(viewId, viewData as Record<string, unknown>, node.type)
     if (content.trim()) populated.push({ id: viewId, content })
   }
 
   if (populated.length === 0) return '*No content yet for the selected audience.*\n'
 
-  // Single view → no tabs wrapper
+  // Single view — no tabs wrapper
   if (populated.length === 1) return populated[0]!.content
 
-  // Multiple views → GitBook tabs
+  // Multiple views — GitBook tabs
   const lines: string[] = []
   lines.push('{% tabs %}')
   for (const { id, content } of populated) {
@@ -203,7 +237,7 @@ function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string 
   const lines: string[] = []
   const viewsToShow = ROLE_VIEWS[role]
 
-  // GitBook frontmatter description (shows as subtitle in sidebar)
+  // GitBook frontmatter description (shows as subtitle in sidebar nav)
   const tagline =
     (node.views['product']?.['problem'] as string | undefined)?.split('\n')[0]
     ?? (node.views['user']?.['userGuide'] as string | undefined)?.split('\n')[0]
@@ -221,14 +255,16 @@ function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string 
   lines.push(`# ${icon} ${node.title}`)
   lines.push('')
 
-  // Meta strip — type · status · tags
-  const statusLabel = STATUS_LABEL[node.status] ?? node.status
-  const tagBadges = (node.tags ?? []).map((t) => `\`${t}\``).join(' ')
-  const typeLabel = TYPE_LABELS[node.type] ?? node.type
-  lines.push(`> **${typeLabel}** · ${statusLabel}${tagBadges ? ' · ' + tagBadges : ''}`)
-  lines.push('')
+  // Meta strip — omitted for FAQ and Epic (parent/educator-facing; type/status adds noise)
+  if (!HIDE_META_STRIP.has(node.type)) {
+    const statusLabel = STATUS_LABEL[node.status] ?? node.status
+    const typeLabel = TYPE_LABELS[node.type] ?? node.type
+    const tagBadges = (node.tags ?? []).map((t) => `\`${t}\``).join(' ')
+    lines.push(`> **${typeLabel}** · ${statusLabel}${tagBadges ? ' · ' + tagBadges : ''}`)
+    lines.push('')
+  }
 
-  // Permanent-decision callout
+  // Permanent-decision danger callout
   if (node.type === 'decision') {
     const rationale = node.views['dev']?.['rationale'] as string | undefined
     const isPermanent = rationale?.toLowerCase().includes('permanent') || rationale?.toLowerCase().includes('non-negotiable')
@@ -240,16 +276,16 @@ function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string 
     }
   }
 
-  // Screenshot / mockup image for game features
+  // Screenshot / mockup for game feature pages
   if (node.type === 'feature' && node.domain === 'games' && node.id !== 'feature-game-mechanics-shared-gx00') {
     lines.push(`![](<../.gitbook/assets/${node.id}.png>)`)
     lines.push('')
   }
 
-  // Main content (tabbed or flat)
+  // Main content
   lines.push(renderViews(node, viewsToShow))
 
-  // Relationships block
+  // ── Relationships ───────────────────────────────────────────────────────────
   const relLines: string[] = []
 
   if (node.parent) {
@@ -283,10 +319,13 @@ function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string 
   }
 
   if (node.references?.length) {
-    relLines.push(`**References:** ${node.references.map((id) => {
+    // Use context-aware labels per node type
+    const refLabel = node.type === 'decision' ? 'Applies to' : node.type === 'runbook' ? 'Architecture' : 'See also'
+    relLines.push(`**${refLabel}:** ${node.references.map((id) => {
       const n = allNodes.find((x) => x.id === id)
-      return `[${n?.title ?? id}](../${n?.domain ?? 'nodes'}/${id}.md)`
-    }).join(', ')}`)
+      const refIcon = n ? (TYPE_ICONS[n.type] ?? '◦') : '◦'
+      return `[${refIcon} ${n?.title ?? id}](../${n?.domain ?? 'nodes'}/${id}.md)`
+    }).join(' · ')}`)
   }
 
   if (relLines.length > 0) {
@@ -334,9 +373,7 @@ function renderSummary(nodes: LacNode[]): string {
     function addNode(node: LacNode, indent: string) {
       const nodeIcon = TYPE_ICONS[node.type] ?? '◦'
       lines.push(`${indent}* [${nodeIcon} ${node.title}](${domain}/${node.id}.md)`)
-      for (const child of childrenOf(node.id)) {
-        addNode(child, indent + '  ')
-      }
+      for (const child of childrenOf(node.id)) addNode(child, indent + '  ')
     }
 
     for (const root of roots) addNode(root, '')
@@ -352,7 +389,6 @@ function renderReadme(nodes: LacNode[], project: string, role: Role): string {
 
   lines.push(`# ${project}`)
   lines.push('')
-
   lines.push('{% hint style="info" %}')
   lines.push('An open-source collection of calm, screen-safe educational games for children aged 3–7.')
   lines.push('No ads · No sounds · No timers · No game over')
@@ -362,10 +398,7 @@ function renderReadme(nodes: LacNode[], project: string, role: Role): string {
   const epic = nodes.find((n) => n.type === 'epic')
   if (epic) {
     const problem = epic.views['product']?.['problem'] as string | undefined
-    if (problem) {
-      lines.push(problem)
-      lines.push('')
-    }
+    if (problem) { lines.push(problem); lines.push('') }
   }
 
   // Games table
@@ -396,7 +429,7 @@ function renderReadme(nodes: LacNode[], project: string, role: Role): string {
     lines.push('')
   }
 
-  // Design principles summary
+  // Design principles
   const decisions = nodes
     .filter((n) => n.type === 'decision')
     .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
@@ -412,7 +445,7 @@ function renderReadme(nodes: LacNode[], project: string, role: Role): string {
     lines.push('')
   }
 
-  // For parents section
+  // For parents
   const faqs = nodes.filter((n) => n.type === 'faq').sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
   if (faqs.length > 0) {
     lines.push('## For Parents & Educators')
@@ -473,14 +506,10 @@ export const gitbookCmd = new Command('gitbook')
 
     const outDir = resolve(root, opts.out)
     mkdirSync(outDir, { recursive: true })
-
-    // Preserve any existing assets (screenshots, custom images)
     mkdirSync(join(outDir, '.gitbook', 'assets'), { recursive: true })
 
     const domains = [...new Set(nodes.map((n) => n.domain))]
-    for (const domain of domains) {
-      mkdirSync(join(outDir, domain), { recursive: true })
-    }
+    for (const domain of domains) mkdirSync(join(outDir, domain), { recursive: true })
 
     let count = 0
     for (const node of nodes) {
@@ -490,11 +519,7 @@ export const gitbookCmd = new Command('gitbook')
 
     writeFileSync(join(outDir, 'SUMMARY.md'), renderSummary(nodes), 'utf8')
     writeFileSync(join(outDir, 'README.md'), renderReadme(nodes, project, role), 'utf8')
-    writeFileSync(
-      join(outDir, '.gitbook.yaml'),
-      `root: ./\nstructure:\n  readme: README.md\n  summary: SUMMARY.md\n`,
-      'utf8'
-    )
+    writeFileSync(join(outDir, '.gitbook.yaml'), `root: ./\nstructure:\n  readme: README.md\n  summary: SUMMARY.md\n`, 'utf8')
 
     console.log(`✓ GitBook export — ${count} pages → ${outDir}`)
     console.log(`  Role: ${role} · Domains: ${domains.join(', ')}`)

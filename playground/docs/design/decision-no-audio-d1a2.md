@@ -29,3 +29,10 @@ requires audio will be rejected or redesigned.
 If a future accessibility review recommends optional audio (e.g. read-aloud for
 non-readers), we will revisit this as a separate decision node before implementing.
 The default remains: silent.
+
+
+---
+
+## Relationships
+
+**Applies to:** [❓ Why is there no sound?](../about/faq-why-no-sound-f1a2.md)

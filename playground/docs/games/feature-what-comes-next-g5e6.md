@@ -52,16 +52,6 @@ Wrong answer choices are other shapes/colors that appear in the visible sequence
 Advancing complexity is session-scoped and resets on page reload — intentional. There is no "level" to unlock or persist. A child who plays every day will naturally pace themselves.
 {% endtab %}
 {% tab title="Product" %}
-### Acceptance Criteria
-
-* [ ] A row of 4 shapes or colors is shown with a "?" at the end (e.g. circle, square, circle, square, ?)
-* [ ] Three answer choices appear below
-* [ ] Child taps the shape or color that completes the pattern
-* [ ] Correct: green highlight, explanation shown (e.g. 'circle square circle square'), next round after 2 seconds
-* [ ] [object Object]
-* [ ] Patterns progress from AB (2-element repeat) to ABC and AABB as the session continues
-* [ ] No levels, no difficulty selector — the game gently increases complexity automatically
-
 ### Problem
 
 Patterns are the foundation of mathematical thinking. Before a child can add or
@@ -80,6 +70,16 @@ without any explanation — they just feel it. A 7-year-old tackles AABB and ABC
 patterns with the satisfaction of a puzzle solved. Both children are building
 logical thinking without knowing it.
 {% endhint %}
+
+### Acceptance Criteria
+
+* [ ] A row of 4 shapes or colors is shown with a "?" at the end (e.g. circle, square, circle, square, ?)
+* [ ] Three answer choices appear below
+* [ ] Child taps the shape or color that completes the pattern
+* [ ] Correct: green highlight, explanation shown (e.g. 'circle square circle square'), next round after 2 seconds
+* [ ] [object Object]
+* [ ] Patterns progress from AB (2-element repeat) to ABC and AABB as the session continues
+* [ ] No levels, no difficulty selector — the game gently increases complexity automatically
 {% endtab %}
 {% endtabs %}
 

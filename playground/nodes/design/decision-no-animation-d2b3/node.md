@@ -7,6 +7,8 @@ domain: design
 schemaVersion: 2
 priority: 2
 tags: [accessibility, policy, animation, epilepsy]
+references:
+  - feature-game-mechanics-shared-gx00
 ---
 
 ## dev.choice

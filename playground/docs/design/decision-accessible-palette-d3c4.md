@@ -26,3 +26,10 @@ every game in this app.
 The Color Corner game (which specifically teaches color names) will be reviewed
 separately to ensure it is meaningful for colorblind children — likely by always
 showing the color name label alongside the swatch.
+
+
+---
+
+## Relationships
+
+**Applies to:** [⬡ Color Corner](../games/feature-color-corner-g4d5.md) · [⬡ Shape Spotter](../games/feature-shape-spotter-g3c4.md)

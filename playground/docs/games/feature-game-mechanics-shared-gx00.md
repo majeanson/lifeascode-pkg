@@ -50,6 +50,16 @@ feel. Count the Dots uses 1.5s; What Comes Next? uses 2s to let the child see
 the completed pattern. Override via the `advanceDelay` prop on GameEngine.
 {% endtab %}
 {% tab title="Product" %}
+### Problem
+
+Children learn at their own pace. A game that rushes a child, punishes mistakes
+harshly, or shows a "Game Over" screen is not designed for learning — it's designed
+for engagement metrics. Every Quiet Minds game is built on the opposite principles.
+
+The shared mechanics exist so that once a child learns how one game works, they
+know how all of them work. No new rules to figure out, no new interface to learn.
+Just a new thing to think about.
+
 ### Acceptance Criteria
 
 * [ ] One question at a time — never multiple simultaneous
@@ -60,16 +70,6 @@ the completed pattern. Override via the `advanceDelay` prop on GameEngine.
 * [ ] No game over — the game never ends on its own
 * [ ] A correct answer automatically advances after 1.5 seconds
 * [ ] Wrong answers never lock the child out — always another try
-
-### Problem
-
-Children learn at their own pace. A game that rushes a child, punishes mistakes
-harshly, or shows a "Game Over" screen is not designed for learning — it's designed
-for engagement metrics. Every Quiet Minds game is built on the opposite principles.
-
-The shared mechanics exist so that once a child learns how one game works, they
-know how all of them work. No new rules to figure out, no new interface to learn.
-Just a new thing to think about.
 {% endtab %}
 {% endtabs %}
 

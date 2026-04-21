@@ -5,10 +5,6 @@ description: >-
 
 # ❓ Why is there no sound?
 
-> **FAQ** · Active · `audio` `policy` `accessibility`
-
-### How to Play
-
 Quiet Minds has no sounds at all — no music, no beeps, no voices.
 
 We made this choice for a few reasons. Children use tablets in all sorts of
@@ -35,4 +31,4 @@ at any moment, in any place, without reaching for the volume button first.
 
 ## Relationships
 
-**References:** [No audio — ever](../design/decision-no-audio-d1a2.md)
+**See also:** [⚖️ No audio — ever](../design/decision-no-audio-d1a2.md)

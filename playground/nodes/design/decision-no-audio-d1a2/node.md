@@ -7,6 +7,8 @@ domain: design
 schemaVersion: 2
 priority: 1
 tags: [accessibility, policy, audio]
+references:
+  - faq-why-no-sound-f1a2
 ---
 
 ## dev.choice

@@ -5,8 +5,6 @@ description: >-
 
 # ◈ Quiet Minds — Calm Educational Games for Kids
 
-> **Epic** · Active · `kids` `education` `calm` `accessibility`
-
 ### Problem
 
 Most apps made for young children are designed to be addictive, not educational.

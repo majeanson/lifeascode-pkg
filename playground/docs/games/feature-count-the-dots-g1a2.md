@@ -38,15 +38,6 @@ Dots are rendered using a fixed `DOT_LAYOUTS` map (1–10) — each entry is `[c
 `generateQuestion(excludeAnswer?)` picks a random answer 1–10 (never the same as last), then picks 3 random wrong choices from the remaining pool and shuffles all 4.
 {% endtab %}
 {% tab title="Product" %}
-### Acceptance Criteria
-
-* [ ] A card shows between 1 and 10 dots arranged in a simple pattern
-* [ ] Four number buttons appear below (one correct, three wrong)
-* [ ] Tapping the correct number turns the card green
-* [ ] Tapping wrong turns the button red, card stays, child can try again
-* [ ] After a correct answer, a new card appears automatically after 1.5 seconds
-* [ ] No timer, no score pressure, no game over
-
 ### Problem
 
 A young child learns to count by doing it again and again, in their own time,
@@ -64,6 +55,15 @@ A 3-year-old who doesn't know any numbers yet can still play this game by
 pointing and trying. A 6-year-old who knows their numbers up to 10 finds it
 satisfying to get every one right. Both children close the app feeling good.
 {% endhint %}
+
+### Acceptance Criteria
+
+* [ ] A card shows between 1 and 10 dots arranged in a simple pattern
+* [ ] Four number buttons appear below (one correct, three wrong)
+* [ ] Tapping the correct number turns the card green
+* [ ] Tapping wrong turns the button red, card stays, child can try again
+* [ ] After a correct answer, a new card appears automatically after 1.5 seconds
+* [ ] No timer, no score pressure, no game over
 {% endtab %}
 {% endtabs %}
 

@@ -2,12 +2,6 @@
 
 > **Runbook** · Active · `dev` `setup` `onboarding`
 
-### Escalation Path
-
-{% hint style="info" %}
-Check the @lifeascode README at lifeascode-pkg/README.md
-{% endhint %}
-
 ### Steps
 
 1. Install Node 18+ or Bun: https://bun.sh
@@ -19,3 +13,16 @@ Check the @lifeascode README at lifeascode-pkg/README.md
 ### Rollback
 
 No database, no migrations. Stop both servers and restart.
+
+---
+
+{% hint style="info" %}
+**Need help?** Check the @lifeascode README at lifeascode-pkg/README.md
+{% endhint %}
+
+
+---
+
+## Relationships
+
+**Architecture:** [⬡ How All Quiet Minds Games Work](../games/feature-game-mechanics-shared-gx00.md)

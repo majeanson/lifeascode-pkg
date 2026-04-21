@@ -7,6 +7,8 @@ domain: core
 schemaVersion: 2
 priority: 1
 tags: [dev, setup, onboarding]
+references:
+  - feature-game-mechanics-shared-gx00
 views:
   support:
     escalationPath: Check the @lifeascode README at lifeascode-pkg/README.md

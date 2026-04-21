@@ -46,16 +46,6 @@ Each swatch is a large rounded rectangle (full-width on mobile, ~2:1 aspect) fil
 Black and white swatches need careful text contrast — white text on black, black text on white. The `textColor` field on each `ColorEntry` handles this explicitly rather than computing contrast at runtime.
 {% endtab %}
 {% tab title="Product" %}
-### Acceptance Criteria
-
-* [ ] A color name is shown at the top (e.g. "Blue")
-* [ ] Four large color swatches appear, each with the color name written inside
-* [ ] Child taps the swatch that matches the named color
-* [ ] [object Object]
-* [ ] [object Object]
-* [ ] [object Object]
-* [ ] Color name is always shown in the swatch (accessible for colorblind children per decision-accessible-palette-d3c4)
-
 ### Problem
 
 Colors are one of the first things children learn to name — but confusing blue and
@@ -75,6 +65,16 @@ over time. The game never hides the color name — it's always right there, so t
 child is never guessing blindly. They're building a real connection between the
 word and the color.
 {% endhint %}
+
+### Acceptance Criteria
+
+* [ ] A color name is shown at the top (e.g. "Blue")
+* [ ] Four large color swatches appear, each with the color name written inside
+* [ ] Child taps the swatch that matches the named color
+* [ ] [object Object]
+* [ ] [object Object]
+* [ ] [object Object]
+* [ ] Color name is always shown in the swatch (accessible for colorblind children per decision-accessible-palette-d3c4)
 {% endtab %}
 {% endtabs %}
 

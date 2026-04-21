@@ -24,3 +24,10 @@ They don't need confetti.
 The single-fade transition is permitted because it is slow, one-directional, and
 does not repeat. Any animation added in future must be reviewed against WCAG 2.3.1
 (Three Flashes) before merging.
+
+
+---
+
+## Relationships
+
+**Applies to:** [⬡ How All Quiet Minds Games Work](../games/feature-game-mechanics-shared-gx00.md)

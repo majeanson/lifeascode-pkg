@@ -45,15 +45,6 @@ Each card renders: an SVG icon or emoji above the object's name in text. The nam
 Letters Q, X, Z have fewer common nouns — the picture bank for these may have only 2 options. The distractor pool draws from the full bank excluding the correct letter, so uniqueness is guaranteed. Letter order is fully randomised; there is no A→Z progression.
 {% endtab %}
 {% tab title="Product" %}
-### Acceptance Criteria
-
-* [ ] A large uppercase letter is shown on screen
-* [ ] Four cards show pictures of familiar objects (e.g. A shows Apple, Ant, Boat, Car)
-* [ ] The child taps the picture whose name starts with the shown letter
-* [ ] Correct tap highlights the card green; wrong tap highlights red, child retries
-* [ ] All 26 letters included; order is randomized each session
-* [ ] Picture labels are always shown in text below the image (supports non-readers learning letter-word connection)
-
 ### Problem
 
 Learning the alphabet isn't just about reciting A-B-C — it's about understanding
@@ -72,6 +63,15 @@ the picture of a Ball. A 7-year-old who knows all their letters flies through it
 confidently. Both come away having practised the letter-sound connection in a
 low-stakes, self-paced way.
 {% endhint %}
+
+### Acceptance Criteria
+
+* [ ] A large uppercase letter is shown on screen
+* [ ] Four cards show pictures of familiar objects (e.g. A shows Apple, Ant, Boat, Car)
+* [ ] The child taps the picture whose name starts with the shown letter
+* [ ] Correct tap highlights the card green; wrong tap highlights red, child retries
+* [ ] All 26 letters included; order is randomized each session
+* [ ] Picture labels are always shown in text below the image (supports non-readers learning letter-word connection)
 {% endtab %}
 {% endtabs %}
 

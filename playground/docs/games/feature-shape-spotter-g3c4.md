@@ -46,16 +46,6 @@ All shapes are **outlined only** (stroke, no fill) per the accessible-palette de
 With 8 shape types and a 6-cell grid, there are always enough distinct distractors. The target shape's variant is excluded from the distractor pool to avoid the edge case where a child taps the "wrong" instance of the correct shape.
 {% endtab %}
 {% tab title="Product" %}
-### Acceptance Criteria
-
-* [ ] A shape name is shown at the top (e.g. "Triangle")
-* [ ] A grid of 6 shapes is shown — one matches the named shape, five do not
-* [ ] Child taps the matching shape
-* [ ] [object Object]
-* [ ] [object Object]
-* [ ] [object Object]
-* [ ] All shapes are outlined, not filled, so color is not the distinguishing factor
-
 ### Problem
 
 Young children encounter shapes everywhere — in building blocks, in picture books,
@@ -74,6 +64,16 @@ the right one. A 6-year-old who knows all eight shapes enjoys the speed of scann
 and finding. The game never tells a child how many they got right — only whether
 the current one is right or wrong.
 {% endhint %}
+
+### Acceptance Criteria
+
+* [ ] A shape name is shown at the top (e.g. "Triangle")
+* [ ] A grid of 6 shapes is shown — one matches the named shape, five do not
+* [ ] Child taps the matching shape
+* [ ] [object Object]
+* [ ] [object Object]
+* [ ] [object Object]
+* [ ] All shapes are outlined, not filled, so color is not the distinguishing factor
 {% endtab %}
 {% endtabs %}
 
