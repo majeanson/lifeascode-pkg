@@ -10,6 +10,7 @@ import { searchCmd } from './commands/search.js'
 import { diagramCmd } from './commands/diagram.js'
 import { serveCmd } from './commands/serve.js'
 import { exportCmd } from './commands/export.js'
+import { gitbookCmd } from './commands/gitbook.js'
 
 const program = new Command()
   .name('lac')
@@ -27,5 +28,6 @@ program.addCommand(searchCmd)
 program.addCommand(diagramCmd)
 program.addCommand(serveCmd)
 program.addCommand(exportCmd)
+program.addCommand(gitbookCmd)
 
 program.parse()
