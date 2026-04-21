@@ -17,9 +17,9 @@ const ROLE_VIEWS: Record<Role, string[]> = {
   all:     ['user', 'dev', 'product', 'support', 'tester'],
 }
 
-// ─── human-readable labels ────────────────────────────────────────────────────
+// ─── labels ───────────────────────────────────────────────────────────────────
 const FIELD_LABELS: Record<string, string> = {
-  userGuide:          'How to Use',
+  userGuide:          'How to Play',
   releaseNotes:       'Release Notes',
   knownLimitations:   'Known Limitations',
   workarounds:        'Workarounds',
@@ -40,12 +40,14 @@ const FIELD_LABELS: Record<string, string> = {
   rollback:           'Rollback',
   testCases:          'Test Cases',
   expectedBehavior:   'Expected Behavior',
+  steps:              'Steps',
 }
 
-const VIEW_LABELS: Record<string, string> = {
-  user:    'User Guide',
-  dev:     'Developer',
+// Tab title shown to readers for each view
+const TAB_LABELS: Record<string, string> = {
+  user:    'For Players',
   product: 'Product',
+  dev:     'Developer',
   support: 'Support',
   tester:  'Testing',
 }
@@ -64,18 +66,48 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_ICONS: Record<string, string> = {
   feature:  '⬡',
   bug:      '🐛',
-  decision: '⚖',
+  decision: '⚖️',
   epic:     '◈',
   research: '🔬',
   runbook:  '📋',
   faq:      '❓',
-  release:  '🏷',
+  release:  '🏷️',
 }
 
-// ─── render a single field value to markdown ─────────────────────────────────
-function renderFieldValue(value: unknown): string {
+// Custom display order for domains — lower index = earlier in ToC
+const DOMAIN_ORDER: Record<string, number> = {
+  vision:  0,
+  games:   1,
+  design:  2,
+  core:    3,
+  about:   4,
+}
+
+const DOMAIN_TITLES: Record<string, string> = {
+  vision:  'The Vision',
+  games:   'The Games',
+  design:  'Design Principles',
+  core:    'For Developers',
+  about:   'For Parents & Educators',
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  draft:    'Draft',
+  active:   'Active',
+  frozen:   'Frozen',
+  archived: 'Archived',
+}
+
+// ─── render a field value to markdown ────────────────────────────────────────
+function renderField(key: string, value: unknown): string {
   if (typeof value === 'string') return value
   if (Array.isArray(value)) {
+    if (key === 'acceptanceCriteria') {
+      return value.map((item) => `* [ ] ${String(item)}`).join('\n')
+    }
+    if (key === 'steps') {
+      return value.map((item, i) => `${i + 1}. ${String(item)}`).join('\n')
+    }
     return value.map((item) => `* ${String(item)}`).join('\n')
   }
   if (value && typeof value === 'object') {
@@ -86,87 +118,153 @@ function renderFieldValue(value: unknown): string {
   return String(value ?? '')
 }
 
-// ─── render a single node as a GitBook page ──────────────────────────────────
-function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string {
+// ─── render one view's fields as markdown lines ───────────────────────────────
+function renderViewFields(viewId: string, viewData: Record<string, unknown>): string {
   const lines: string[] = []
-  const viewsToShow = ROLE_VIEWS[role]
 
-  // GitBook frontmatter — description used as subtitle in nav
-  const tagline = (node.views['product']?.['problem'] as string | undefined)?.split('\n')[0]
-    ?? (node.views['user']?.['userGuide'] as string | undefined)?.split('\n')[0]
-    ?? ''
-  if (tagline) {
-    lines.push('---')
-    lines.push(`description: ${tagline.replace(/"/g, "'")}`)
-    lines.push('---')
+  for (const [fieldId, fieldValue] of Object.entries(viewData)) {
+    if (fieldValue === undefined || fieldValue === null || fieldValue === '') continue
+    if (Array.isArray(fieldValue) && fieldValue.length === 0) continue
+
+    const label = FIELD_LABELS[fieldId] ?? fieldId
+
+    // Fields that get special GitBook blocks
+    if (fieldId === 'successCriteria') {
+      lines.push(`### ${label}`)
+      lines.push('')
+      lines.push('{% hint style="success" %}')
+      lines.push(renderField(fieldId, fieldValue))
+      lines.push('{% endhint %}')
+    } else if (fieldId === 'knownLimitations') {
+      lines.push(`### ${label}`)
+      lines.push('')
+      lines.push('{% hint style="warning" %}')
+      lines.push(renderField(fieldId, fieldValue))
+      lines.push('{% endhint %}')
+    } else if (fieldId === 'escalationPath') {
+      lines.push(`### ${label}`)
+      lines.push('')
+      lines.push('{% hint style="info" %}')
+      lines.push(renderField(fieldId, fieldValue))
+      lines.push('{% endhint %}')
+    } else if (fieldId === 'componentFile') {
+      lines.push(`### ${label}`)
+      lines.push('')
+      lines.push(`\`${renderField(fieldId, fieldValue)}\``)
+    } else if (fieldId === 'implementation') {
+      lines.push(`### ${label}`)
+      lines.push('')
+      lines.push(renderField(fieldId, fieldValue))
+    } else {
+      lines.push(`### ${label}`)
+      lines.push('')
+      lines.push(renderField(fieldId, fieldValue))
+    }
+
     lines.push('')
   }
 
-  // Title
-  const icon = TYPE_ICONS[node.type] ?? '◦'
-  lines.push(`# ${icon} ${node.title}`)
-  lines.push('')
+  return lines.join('\n')
+}
 
-  // Meta badges
-  const metaParts: string[] = [
-    `**Type:** ${TYPE_LABELS[node.type] ?? node.type}`,
-    `**Status:** ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`,
-    `**Domain:** ${node.domain}`,
-  ]
-  if (node.tags?.length) metaParts.push(`**Tags:** ${node.tags.join(', ')}`)
-  if (node.priority) metaParts.push(`**Priority:** ${node.priority}`)
-  lines.push(metaParts.join(' · '))
-  lines.push('')
-  lines.push('---')
-  lines.push('')
+// ─── render node views as GitBook tabs (or flat for single-view nodes) ────────
+function renderViews(node: LacNode, viewsToShow: string[]): string {
+  const populated: Array<{ id: string; content: string }> = []
 
-  // Views — only include views in scope for this role
-  let hasContent = false
   for (const viewId of viewsToShow) {
     const viewData = node.views[viewId]
     if (!viewData || Object.keys(viewData).length === 0) continue
 
-    const viewLabel = VIEW_LABELS[viewId] ?? viewId
-    let viewSectionAdded = false
+    const content = renderViewFields(viewId, viewData as Record<string, unknown>)
+    if (content.trim()) populated.push({ id: viewId, content })
+  }
 
-    for (const [fieldId, fieldValue] of Object.entries(viewData)) {
-      if (fieldValue === undefined || fieldValue === null || fieldValue === '') continue
-      if (Array.isArray(fieldValue) && fieldValue.length === 0) continue
+  if (populated.length === 0) return '*No content yet for the selected audience.*\n'
 
-      if (!viewSectionAdded) {
-        lines.push(`## ${viewLabel}`)
-        lines.push('')
-        viewSectionAdded = true
-        hasContent = true
-      }
+  // Single view → no tabs wrapper
+  if (populated.length === 1) return populated[0]!.content
 
-      const label = FIELD_LABELS[fieldId] ?? fieldId
-      lines.push(`### ${label}`)
-      lines.push('')
-      lines.push(renderFieldValue(fieldValue))
+  // Multiple views → GitBook tabs
+  const lines: string[] = []
+  lines.push('{% tabs %}')
+  for (const { id, content } of populated) {
+    const title = TAB_LABELS[id] ?? id
+    lines.push(`{% tab title="${title}" %}`)
+    lines.push(content.trim())
+    lines.push('{% endtab %}')
+  }
+  lines.push('{% endtabs %}')
+  lines.push('')
+  return lines.join('\n')
+}
+
+// ─── render a single node page ────────────────────────────────────────────────
+function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string {
+  const lines: string[] = []
+  const viewsToShow = ROLE_VIEWS[role]
+
+  // GitBook frontmatter description (shows as subtitle in sidebar)
+  const tagline =
+    (node.views['product']?.['problem'] as string | undefined)?.split('\n')[0]
+    ?? (node.views['user']?.['userGuide'] as string | undefined)?.split('\n')[0]
+    ?? ''
+  if (tagline) {
+    lines.push('---')
+    lines.push(`description: >-`)
+    lines.push(`  ${tagline.replace(/"/g, "'")}`)
+    lines.push('---')
+    lines.push('')
+  }
+
+  // Page title
+  const icon = TYPE_ICONS[node.type] ?? '◦'
+  lines.push(`# ${icon} ${node.title}`)
+  lines.push('')
+
+  // Meta strip — type · status · tags
+  const statusLabel = STATUS_LABEL[node.status] ?? node.status
+  const tagBadges = (node.tags ?? []).map((t) => `\`${t}\``).join(' ')
+  const typeLabel = TYPE_LABELS[node.type] ?? node.type
+  lines.push(`> **${typeLabel}** · ${statusLabel}${tagBadges ? ' · ' + tagBadges : ''}`)
+  lines.push('')
+
+  // Permanent-decision callout
+  if (node.type === 'decision') {
+    const rationale = node.views['dev']?.['rationale'] as string | undefined
+    const isPermanent = rationale?.toLowerCase().includes('permanent') || rationale?.toLowerCase().includes('non-negotiable')
+    if (isPermanent) {
+      lines.push('{% hint style="danger" %}')
+      lines.push('This is a permanent design decision. It is not open for reconsideration unless a formal decision node is created to override it.')
+      lines.push('{% endhint %}')
       lines.push('')
     }
   }
 
-  if (!hasContent) {
-    lines.push('*This node has no content yet for the selected role.*')
+  // Screenshot / mockup image for game features
+  if (node.type === 'feature' && node.domain === 'games' && node.id !== 'feature-game-mechanics-shared-gx00') {
+    lines.push(`![](<../.gitbook/assets/${node.id}.png>)`)
     lines.push('')
   }
 
-  // Relationships
+  // Main content (tabbed or flat)
+  lines.push(renderViews(node, viewsToShow))
+
+  // Relationships block
   const relLines: string[] = []
 
   if (node.parent) {
     const parentNode = allNodes.find((n) => n.id === node.parent)
     const parentTitle = parentNode?.title ?? node.parent
-    relLines.push(`**Inherits from:** [${parentTitle}](../${parentNode?.domain ?? node.domain}/${node.parent}.md)`)
+    const parentIcon = parentNode ? (TYPE_ICONS[parentNode.type] ?? '◦') : '◦'
+    relLines.push(`**Part of:** [${parentIcon} ${parentTitle}](../${parentNode?.domain ?? node.domain}/${node.parent}.md)`)
   }
 
-  const childNodes = allNodes.filter((n) => n.parent === node.id || node.children?.includes(n.id))
-  if (childNodes.length > 0) {
-    relLines.push(`**Children:**`)
-    for (const c of childNodes) {
-      relLines.push(`* [${c.title}](../${c.domain}/${c.id}.md)`)
+  const children = allNodes.filter((n) => n.parent === node.id || node.children?.includes(n.id))
+  if (children.length > 0) {
+    relLines.push(`**Includes:**`)
+    for (const c of children) {
+      const cIcon = TYPE_ICONS[c.type] ?? '◦'
+      relLines.push(`* [${cIcon} ${c.title}](../${c.domain}/${c.id}.md)`)
     }
   }
 
@@ -192,6 +290,7 @@ function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string 
   }
 
   if (relLines.length > 0) {
+    lines.push('')
     lines.push('---')
     lines.push('')
     lines.push('## Relationships')
@@ -203,54 +302,61 @@ function renderNodePage(node: LacNode, allNodes: LacNode[], role: Role): string 
   return lines.join('\n')
 }
 
-// ─── build SUMMARY.md (GitBook table of contents) ────────────────────────────
-function renderSummary(nodes: LacNode[], project: string): string {
+// ─── SUMMARY.md ───────────────────────────────────────────────────────────────
+function renderSummary(nodes: LacNode[]): string {
   const lines: string[] = []
   lines.push('# Summary')
   lines.push('')
   lines.push('* [Introduction](README.md)')
   lines.push('')
 
-  // Group by domain, order by priority
   const byDomain = new Map<string, LacNode[]>()
   for (const node of nodes) {
     if (!byDomain.has(node.domain)) byDomain.set(node.domain, [])
     byDomain.get(node.domain)!.push(node)
   }
 
-  // Sort each domain's nodes: no parent first (roots), then children
-  for (const [domain, domainNodes] of byDomain) {
+  const sortedDomains = [...byDomain.keys()].sort(
+    (a, b) => (DOMAIN_ORDER[a] ?? 99) - (DOMAIN_ORDER[b] ?? 99)
+  )
+
+  for (const domain of sortedDomains) {
+    const domainNodes = byDomain.get(domain)!
     domainNodes.sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
 
-    const domainLabel = domain.charAt(0).toUpperCase() + domain.slice(1)
-    lines.push(`## ${domainLabel}`)
+    const domainTitle = DOMAIN_TITLES[domain] ?? (domain.charAt(0).toUpperCase() + domain.slice(1))
+    lines.push(`## ${domainTitle}`)
     lines.push('')
 
-    // Build parent-child tree within domain
     const roots = domainNodes.filter((n) => !n.parent || !nodes.find((p) => p.id === n.parent))
-    const childrenOf = (parentId: string) => domainNodes.filter((n) => n.parent === parentId)
+    const childrenOf = (id: string) => domainNodes.filter((n) => n.parent === id)
 
     function addNode(node: LacNode, indent: string) {
-      lines.push(`${indent}* [${node.title}](${domain}/${node.id}.md)`)
+      const nodeIcon = TYPE_ICONS[node.type] ?? '◦'
+      lines.push(`${indent}* [${nodeIcon} ${node.title}](${domain}/${node.id}.md)`)
       for (const child of childrenOf(node.id)) {
         addNode(child, indent + '  ')
       }
     }
 
-    for (const root of roots) {
-      addNode(root, '')
-    }
-
+    for (const root of roots) addNode(root, '')
     lines.push('')
   }
 
   return lines.join('\n')
 }
 
-// ─── landing README ───────────────────────────────────────────────────────────
+// ─── README landing page ──────────────────────────────────────────────────────
 function renderReadme(nodes: LacNode[], project: string, role: Role): string {
   const lines: string[] = []
+
   lines.push(`# ${project}`)
+  lines.push('')
+
+  lines.push('{% hint style="info" %}')
+  lines.push('An open-source collection of calm, screen-safe educational games for children aged 3–7.')
+  lines.push('No ads · No sounds · No timers · No game over')
+  lines.push('{% endhint %}')
   lines.push('')
 
   const epic = nodes.find((n) => n.type === 'epic')
@@ -262,27 +368,72 @@ function renderReadme(nodes: LacNode[], project: string, role: Role): string {
     }
   }
 
-  const byDomain = new Map<string, LacNode[]>()
-  for (const node of nodes) {
-    if (!byDomain.has(node.domain)) byDomain.set(node.domain, [])
-    byDomain.get(node.domain)!.push(node)
-  }
+  // Games table
+  const games = nodes
+    .filter((n) => n.type === 'feature' && n.domain === 'games' && n.id !== 'feature-game-mechanics-shared-gx00')
+    .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
 
-  lines.push('## Contents')
-  lines.push('')
-  for (const [domain, domainNodes] of byDomain) {
-    const label = domain.charAt(0).toUpperCase() + domain.slice(1)
-    const active = domainNodes.filter((n) => n.status === 'active' || n.status === 'frozen').length
-    lines.push(`**${label}** — ${domainNodes.length} node${domainNodes.length !== 1 ? 's' : ''}${active ? ` (${active} active)` : ''}`)
-  }
-  lines.push('')
-
-  if (role !== 'all') {
-    lines.push(`> 📖 This documentation is filtered for the **${role}** audience.`)
+  if (games.length > 0) {
+    lines.push('## The Games')
+    lines.push('')
+    lines.push('| | Game | Ages | What it teaches |')
+    lines.push('|--|------|------|-----------------|')
+    const GAME_EMOJI: Record<string, string> = {
+      'feature-count-the-dots-g1a2':  '🔵',
+      'feature-letter-match-g2b3':    '🔤',
+      'feature-shape-spotter-g3c4':   '🔷',
+      'feature-color-corner-g4d5':    '🎨',
+      'feature-what-comes-next-g5e6': '❓',
+    }
+    for (const game of games) {
+      const emoji = GAME_EMOJI[game.id] ?? '⬡'
+      const ageTag = (game.tags ?? []).find((t) => t.startsWith('ages-'))
+      const ageRange = ageTag ? ageTag.replace('ages-', '').replace('-', '–') : '3–7'
+      const problem = (game.views['product']?.['problem'] as string | undefined)?.split('\n')[0] ?? ''
+      const statusNote = game.status === 'draft' ? ' _(coming soon)_' : ''
+      lines.push(`| ${emoji} | [**${game.title}**](games/${game.id}.md)${statusNote} | ${ageRange} | ${problem} |`)
+    }
     lines.push('')
   }
 
-  lines.push(`*Generated by [@lifeascode/lac](https://github.com/lifeascode/lac)*`)
+  // Design principles summary
+  const decisions = nodes
+    .filter((n) => n.type === 'decision')
+    .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
+
+  if (decisions.length > 0) {
+    lines.push('## Design Principles')
+    lines.push('')
+    lines.push('Every Quiet Minds game is built on three non-negotiable commitments:')
+    lines.push('')
+    for (const d of decisions) {
+      lines.push(`* **[${d.title}](design/${d.id}.md)**`)
+    }
+    lines.push('')
+  }
+
+  // For parents section
+  const faqs = nodes.filter((n) => n.type === 'faq').sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
+  if (faqs.length > 0) {
+    lines.push('## For Parents & Educators')
+    lines.push('')
+    for (const faq of faqs) {
+      const answer = (faq.views['user']?.['userGuide'] as string | undefined)?.split('\n')[0] ?? ''
+      lines.push(`* **[${faq.title}](about/${faq.id}.md)** — ${answer}`)
+    }
+    lines.push('')
+  }
+
+  if (role !== 'all') {
+    lines.push('{% hint style="info" %}')
+    lines.push(`This documentation is filtered for the **${role}** audience.`)
+    lines.push('{% endhint %}')
+    lines.push('')
+  }
+
+  lines.push('---')
+  lines.push('')
+  lines.push('*Documented with [Life as Code](https://github.com/lifeascode/lac) · Built with care for young learners*')
   lines.push('')
 
   return lines.join('\n')
@@ -293,11 +444,7 @@ export const gitbookCmd = new Command('gitbook')
   .description('Export nodes as a GitBook-compatible Markdown site (SUMMARY.md + one page per node)')
   .argument('[dir]', 'workspace root', '.')
   .option('-o, --out <path>', 'output directory', 'gitbook-out')
-  .option(
-    '--role <role>',
-    'audience filter: user, dev, product, support, tester, all',
-    'all'
-  )
+  .option('--role <role>', 'audience filter: user, dev, product, support, tester, all', 'all')
   .option('--no-build', 'skip running lac build (use existing .lac/graph.json)')
   .action((dir: string, opts: { out: string; role: string; build: boolean }) => {
     const root = resolve(dir)
@@ -315,9 +462,7 @@ export const gitbookCmd = new Command('gitbook')
     }
 
     if (opts.build !== false) {
-      try {
-        buildGraph(root)
-      } catch (e) {
+      try { buildGraph(root) } catch (e) {
         console.error(`Build error: ${(e as Error).message}`)
         process.exit(1)
       }
@@ -329,27 +474,22 @@ export const gitbookCmd = new Command('gitbook')
     const outDir = resolve(root, opts.out)
     mkdirSync(outDir, { recursive: true })
 
-    // Collect domains for directory creation
+    // Preserve any existing assets (screenshots, custom images)
+    mkdirSync(join(outDir, '.gitbook', 'assets'), { recursive: true })
+
     const domains = [...new Set(nodes.map((n) => n.domain))]
     for (const domain of domains) {
       mkdirSync(join(outDir, domain), { recursive: true })
     }
 
-    // Write node pages
     let count = 0
     for (const node of nodes) {
-      const pageContent = renderNodePage(node, nodes, role)
-      writeFileSync(join(outDir, node.domain, `${node.id}.md`), pageContent, 'utf8')
+      writeFileSync(join(outDir, node.domain, `${node.id}.md`), renderNodePage(node, nodes, role), 'utf8')
       count++
     }
 
-    // Write SUMMARY.md
-    writeFileSync(join(outDir, 'SUMMARY.md'), renderSummary(nodes, project), 'utf8')
-
-    // Write README.md (landing page)
+    writeFileSync(join(outDir, 'SUMMARY.md'), renderSummary(nodes), 'utf8')
     writeFileSync(join(outDir, 'README.md'), renderReadme(nodes, project, role), 'utf8')
-
-    // Write .gitbook.yaml (tells GitBook where the root is)
     writeFileSync(
       join(outDir, '.gitbook.yaml'),
       `root: ./\nstructure:\n  readme: README.md\n  summary: SUMMARY.md\n`,
@@ -360,7 +500,7 @@ export const gitbookCmd = new Command('gitbook')
     console.log(`  Role: ${role} · Domains: ${domains.join(', ')}`)
     console.log('')
     console.log('  Next steps:')
-    console.log('  1. Commit the output directory to your repo')
-    console.log('  2. In GitBook: Integrations → GitHub → point at this directory')
-    console.log('  3. Add to CI: lac gitbook --role user -o docs/')
+    console.log('  1. Add screenshots to docs/.gitbook/assets/{node-id}.png')
+    console.log('  2. Commit docs/ to trigger GitBook sync')
+    console.log('  3. In GitBook: Integrations → GitHub → root directory: playground/docs')
   })

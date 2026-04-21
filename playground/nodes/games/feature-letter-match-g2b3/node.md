@@ -47,3 +47,21 @@ A 4-year-old who knows a few letters can feel the satisfaction of matching "B" w
 the picture of a Ball. A 7-year-old who knows all their letters flies through it
 confidently. Both come away having practised the letter-sound connection in a
 low-stakes, self-paced way.
+
+## dev.implementation
+
+`LetterMatch.tsx` follows the shared GameEngine contract. State shape:
+- `letter: string` — current uppercase letter (A–Z)
+- `choices: PictureCard[]` — four cards: one whose name starts with `letter`, three distractors
+- `phase: 'playing' | 'correct' | 'advancing'`
+- `wrongTaps: Set<string>` — tracks which card ids were tapped incorrectly
+
+`PICTURE_BANK` maps each letter to 3–5 familiar nouns with short, phonetically clear names (e.g. A → Apple, Ant, Axe). Distractors are drawn from other letters, ensuring no accidental matches.
+
+Each card renders: an SVG icon or emoji above the object's name in text. The name text is always visible — it's the scaffold that helps a non-reader cross-reference the first letter. Text is bold and large (24px+) to be legible on a small screen.
+
+`generateQuestion(excludeLetter?)` picks a random letter (never the same as last), selects one correct picture and three random distractors, then shuffles.
+
+## dev.edgeCases
+
+Letters Q, X, Z have fewer common nouns — the picture bank for these may have only 2 options. The distractor pool draws from the full bank excluding the correct letter, so uniqueness is guaranteed. Letter order is fully randomised; there is no A→Z progression.

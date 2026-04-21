@@ -1,21 +1,20 @@
 ---
-description: Quiet Minds is designed for children aged 3 to 7, but there are no rules.
+description: >-
+  Quiet Minds is designed for children aged 3 to 7, but there are no rules.
 ---
 
 # ❓ What age is Quiet Minds for?
 
-**Type:** FAQ · **Status:** Active · **Domain:** about · **Tags:** age, audience, parents · **Priority:** 2
-
----
-
-## User Guide
+> **FAQ** · Active · `age` `audience` `parents`
 
 ### Known Limitations
 
+{% hint style="warning" %}
 * Games require a touchscreen — not suitable for children using a mouse only
 * Very young children (under 3) may need a grown-up to play alongside them
+{% endhint %}
 
-### How to Use
+### How to Play
 
 Quiet Minds is designed for children aged 3 to 7, but there are no rules.
 
@@ -28,6 +27,7 @@ knows their alphabet enjoys Letter Match as a warm-up, not a challenge.
 
 There are no levels to unlock and no age gates. Every game is always
 available. Children naturally gravitate toward what suits them.
+
 
 ---
 

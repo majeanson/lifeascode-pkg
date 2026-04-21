@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, master]
 
+defaults:
+  run:
+    working-directory: playground
+
 jobs:
   lac:
     name: Build & lint nodes
@@ -17,8 +21,12 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install @lifeascode/lac
-        run: npm install -g @lifeascode/lac
+      - name: Build @lifeascode/lac from source
+        working-directory: .
+        run: |
+          bun install
+          bun run build
+          npm install -g .
 
       - name: lac build
         run: lac build .
@@ -39,9 +47,10 @@ jobs:
 
       - name: Commit GitBook docs
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        working-directory: .
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
+          git add playground/docs/
           git diff --staged --quiet || git commit -m "chore: sync gitbook docs [skip ci]"
           git push

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 520" width="390" height="520">
+  <rect width="390" height="520" fill="#f9f7f2"/>
+  <rect x="20" y="20" width="350" height="480" rx="24" ry="24" fill="#e8e3db" opacity="0.6"/>
+  <rect x="16" y="16" width="350" height="480" rx="24" ry="24" fill="#ffffff" stroke="#e0dbd3" stroke-width="1.5"/>
+  <rect x="16" y="16" width="350" height="52" rx="24" ry="24" fill="#ffffff"/>
+  <rect x="16" y="44" width="350" height="24" fill="#ffffff"/>
+  <text x="191" y="46" font-family="Georgia, serif" font-size="15" font-weight="700" fill="#1a1a2e" text-anchor="middle">Letter Match</text>
+
+  <!-- Big letter at top -->
+  <rect x="120" y="76" width="142" height="100" rx="16" ry="16" fill="#f9f7f2" stroke="#e0dbd3" stroke-width="1.5"/>
+  <text x="191" y="148" font-family="Georgia, serif" font-size="72" font-weight="700" fill="#1a1a2e" text-anchor="middle">B</text>
+
+  <!-- Instruction -->
+  <text x="191" y="202" font-family="Georgia, serif" font-size="13" fill="#6b6570" text-anchor="middle">Which picture starts with B?</text>
+
+  <!-- 4 picture cards in 2x2 grid -->
+  <!-- Ball (correct, green) -->
+  <rect x="46" y="216" width="134" height="108" rx="12" ry="12" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <!-- Ball SVG -->
+  <circle cx="113" cy="256" r="28" fill="none" stroke="#16a34a" stroke-width="3"/>
+  <path d="M88 250 Q113 240 138 250" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <path d="M88 262 Q113 272 138 262" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <line x1="113" y1="228" x2="113" y2="284" stroke="#16a34a" stroke-width="2"/>
+  <text x="113" y="310" font-family="Georgia, serif" font-size="13" font-weight="600" fill="#16a34a" text-anchor="middle">Ball</text>
+
+  <!-- Car (wrong) -->
+  <rect x="196" y="216" width="134" height="108" rx="12" ry="12" fill="#ffffff" stroke="#e0dbd3" stroke-width="1.5"/>
+  <!-- Simple car -->
+  <rect x="215" y="252" width="90" height="30" rx="4" ry="4" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <rect x="228" y="238" width="64" height="20" rx="4" ry="4" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <circle cx="232" cy="284" r="8" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <circle cx="284" cy="284" r="8" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <text x="263" y="310" font-family="Georgia, serif" font-size="13" fill="#6b6570" text-anchor="middle">Car</text>
+
+  <!-- Dog (wrong) -->
+  <rect x="46" y="336" width="134" height="108" rx="12" ry="12" fill="#ffffff" stroke="#e0dbd3" stroke-width="1.5"/>
+  <!-- Simple dog face -->
+  <circle cx="113" cy="374" r="24" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <circle cx="104" cy="367" r="3" fill="#6b6570"/>
+  <circle cx="122" cy="367" r="3" fill="#6b6570"/>
+  <path d="M106 382 Q113 388 120 382" fill="none" stroke="#6b6570" stroke-width="2"/>
+  <path d="M94 354 Q97 344 102 350" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <path d="M132 354 Q129 344 124 350" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <text x="113" y="430" font-family="Georgia, serif" font-size="13" fill="#6b6570" text-anchor="middle">Dog</text>
+
+  <!-- Apple (wrong) -->
+  <rect x="196" y="336" width="134" height="108" rx="12" ry="12" fill="#ffffff" stroke="#e0dbd3" stroke-width="1.5"/>
+  <!-- Simple apple -->
+  <ellipse cx="263" cy="374" rx="24" ry="22" fill="none" stroke="#6b6570" stroke-width="2.5"/>
+  <path d="M263 352 Q268 342 275 345" fill="none" stroke="#6b6570" stroke-width="2"/>
+  <path d="M247 364 Q236 360 238 372" fill="none" stroke="#6b6570" stroke-width="1.5"/>
+  <text x="263" y="430" font-family="Georgia, serif" font-size="13" fill="#6b6570" text-anchor="middle">Apple</text>
+
+  <text x="191" y="490" font-family="Georgia, serif" font-size="11" fill="#c4bfb8" text-anchor="middle">Quiet Minds</text>
+</svg>

@@ -1,10 +1,6 @@
-# ⚖ No flashing or distracting animation
+# ⚖️ No flashing or distracting animation
 
-**Type:** Decision · **Status:** Active · **Domain:** design · **Tags:** accessibility, policy, animation, epilepsy · **Priority:** 2
-
----
-
-## Developer
+> **Decision** · Active · `accessibility` `policy` `animation` `epilepsy`
 
 ### Decision
 

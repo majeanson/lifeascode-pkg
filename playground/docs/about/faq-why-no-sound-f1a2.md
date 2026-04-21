@@ -1,16 +1,13 @@
 ---
-description: Quiet Minds has no sounds at all — no music, no beeps, no voices.
+description: >-
+  Quiet Minds has no sounds at all — no music, no beeps, no voices.
 ---
 
 # ❓ Why is there no sound?
 
-**Type:** FAQ · **Status:** Active · **Domain:** about · **Tags:** audio, policy, accessibility · **Priority:** 1
+> **FAQ** · Active · `audio` `policy` `accessibility`
 
----
-
-## User Guide
-
-### How to Use
+### How to Play
 
 Quiet Minds has no sounds at all — no music, no beeps, no voices.
 
@@ -28,8 +25,11 @@ at any moment, in any place, without reaching for the volume button first.
 
 ### Known Limitations
 
+{% hint style="warning" %}
 * Children who learn better with audio prompts will not get that support here
 * Text labels are provided on all images and color swatches as a substitute
+{% endhint %}
+
 
 ---
 

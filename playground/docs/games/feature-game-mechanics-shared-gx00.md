@@ -1,16 +1,15 @@
 ---
-description: Children learn at their own pace. A game that rushes a child, punishes mistakes
+description: >-
+  Children learn at their own pace. A game that rushes a child, punishes mistakes
 ---
 
 # ⬡ How All Quiet Minds Games Work
 
-**Type:** Feature · **Status:** Active · **Domain:** games · **Tags:** mechanics, shared, base, all-games · **Priority:** 1
+> **Feature** · Active · `mechanics` `shared` `base` `all-games`
 
----
-
-## User Guide
-
-### How to Use
+{% tabs %}
+{% tab title="For Players" %}
+### How to Play
 
 Every game in Quiet Minds works the same way.
 
@@ -24,12 +23,11 @@ If you're wrong, it turns red and you can try again, as many times as you need.
 
 There's no timer. No score. No game over. Just the question and all the time
 in the world to think about it.
-
-## Developer
-
+{% endtab %}
+{% tab title="Developer" %}
 ### Component File
 
-src/games/shared/GameEngine.tsx
+`src/games/shared/GameEngine.tsx`
 
 ### Implementation
 
@@ -50,19 +48,18 @@ The engine handles all state transitions, timing, and accessibility.
 Each child game may override the advance delay (default 1.5s) for their game
 feel. Count the Dots uses 1.5s; What Comes Next? uses 2s to let the child see
 the completed pattern. Override via the `advanceDelay` prop on GameEngine.
-
-## Product
-
+{% endtab %}
+{% tab title="Product" %}
 ### Acceptance Criteria
 
-* One question at a time — never multiple simultaneous
-* Tap to answer — no dragging, no typing, no keyboard
-* Correct answer turns green; wrong answer turns red (retry immediately)
-* No timer — a child can take as long as they need
-* No score — there is nothing to win or lose
-* No game over — the game never ends on its own
-* A correct answer automatically advances after 1.5 seconds
-* Wrong answers never lock the child out — always another try
+* [ ] One question at a time — never multiple simultaneous
+* [ ] Tap to answer — no dragging, no typing, no keyboard
+* [ ] Correct answer turns green; wrong answer turns red (retry immediately)
+* [ ] No timer — a child can take as long as they need
+* [ ] No score — there is nothing to win or lose
+* [ ] No game over — the game never ends on its own
+* [ ] A correct answer automatically advances after 1.5 seconds
+* [ ] Wrong answers never lock the child out — always another try
 
 ### Problem
 
@@ -73,14 +70,17 @@ for engagement metrics. Every Quiet Minds game is built on the opposite principl
 The shared mechanics exist so that once a child learns how one game works, they
 know how all of them work. No new rules to figure out, no new interface to learn.
 Just a new thing to think about.
+{% endtab %}
+{% endtabs %}
+
 
 ---
 
 ## Relationships
 
-**Children:**
-* [Color Corner](../games/feature-color-corner-g4d5.md)
-* [Count the Dots](../games/feature-count-the-dots-g1a2.md)
-* [Letter Match](../games/feature-letter-match-g2b3.md)
-* [Shape Spotter](../games/feature-shape-spotter-g3c4.md)
-* [What Comes Next?](../games/feature-what-comes-next-g5e6.md)
+**Includes:**
+* [⬡ Color Corner](../games/feature-color-corner-g4d5.md)
+* [⬡ Count the Dots](../games/feature-count-the-dots-g1a2.md)
+* [⬡ Letter Match](../games/feature-letter-match-g2b3.md)
+* [⬡ Shape Spotter](../games/feature-shape-spotter-g3c4.md)
+* [⬡ What Comes Next?](../games/feature-what-comes-next-g5e6.md)

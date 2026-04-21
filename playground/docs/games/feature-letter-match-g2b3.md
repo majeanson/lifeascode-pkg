@@ -1,16 +1,17 @@
 ---
-description: Learning the alphabet isn't just about reciting A-B-C — it's about understanding
+description: >-
+  Learning the alphabet isn't just about reciting A-B-C — it's about understanding
 ---
 
 # ⬡ Letter Match
 
-**Type:** Feature · **Status:** Draft · **Domain:** games · **Tags:** alphabet, letters, reading, ages-4-7 · **Priority:** 2
+> **Feature** · Draft · `alphabet` `letters` `reading` `ages-4-7`
 
----
+![](<../.gitbook/assets/feature-letter-match-g2b3.png>)
 
-## User Guide
-
-### How to Use
+{% tabs %}
+{% tab title="For Players" %}
+### How to Play
 
 A big letter appears at the top — like **A** or **B** or **T**.
 Four pictures appear below it. Each picture has its name written underneath.
@@ -19,23 +20,39 @@ Find the picture whose name starts with the same letter. Tap it.
 
 The name is always written under the picture, so you can look at the first
 letter of the word and compare it to the letter at the top.
-
-## Developer
-
+{% endtab %}
+{% tab title="Developer" %}
 ### Component File
 
-src/games/LetterMatch.tsx
+`src/games/LetterMatch.tsx`
 
-## Product
+### Implementation
 
+`LetterMatch.tsx` follows the shared GameEngine contract. State shape:
+- `letter: string` — current uppercase letter (A–Z)
+- `choices: PictureCard[]` — four cards: one whose name starts with `letter`, three distractors
+- `phase: 'playing' | 'correct' | 'advancing'`
+- `wrongTaps: Set<string>` — tracks which card ids were tapped incorrectly
+
+`PICTURE_BANK` maps each letter to 3–5 familiar nouns with short, phonetically clear names (e.g. A → Apple, Ant, Axe). Distractors are drawn from other letters, ensuring no accidental matches.
+
+Each card renders: an SVG icon or emoji above the object's name in text. The name text is always visible — it's the scaffold that helps a non-reader cross-reference the first letter. Text is bold and large (24px+) to be legible on a small screen.
+
+`generateQuestion(excludeLetter?)` picks a random letter (never the same as last), selects one correct picture and three random distractors, then shuffles.
+
+### Edge Cases
+
+Letters Q, X, Z have fewer common nouns — the picture bank for these may have only 2 options. The distractor pool draws from the full bank excluding the correct letter, so uniqueness is guaranteed. Letter order is fully randomised; there is no A→Z progression.
+{% endtab %}
+{% tab title="Product" %}
 ### Acceptance Criteria
 
-* A large uppercase letter is shown on screen
-* Four cards show pictures of familiar objects (e.g. A shows Apple, Ant, Boat, Car)
-* The child taps the picture whose name starts with the shown letter
-* Correct tap highlights the card green; wrong tap highlights red, child retries
-* All 26 letters included; order is randomized each session
-* Picture labels are always shown in text below the image (supports non-readers learning letter-word connection)
+* [ ] A large uppercase letter is shown on screen
+* [ ] Four cards show pictures of familiar objects (e.g. A shows Apple, Ant, Boat, Car)
+* [ ] The child taps the picture whose name starts with the shown letter
+* [ ] Correct tap highlights the card green; wrong tap highlights red, child retries
+* [ ] All 26 letters included; order is randomized each session
+* [ ] Picture labels are always shown in text below the image (supports non-readers learning letter-word connection)
 
 ### Problem
 
@@ -49,13 +66,18 @@ the word written under the picture. The child just has to notice the first lette
 
 ### Success Criteria
 
+{% hint style="success" %}
 A 4-year-old who knows a few letters can feel the satisfaction of matching "B" with
 the picture of a Ball. A 7-year-old who knows all their letters flies through it
 confidently. Both come away having practised the letter-sound connection in a
 low-stakes, self-paced way.
+{% endhint %}
+{% endtab %}
+{% endtabs %}
+
 
 ---
 
 ## Relationships
 
-**Inherits from:** [How All Quiet Minds Games Work](../games/feature-game-mechanics-shared-gx00.md)
+**Part of:** [⬡ How All Quiet Minds Games Work](../games/feature-game-mechanics-shared-gx00.md)

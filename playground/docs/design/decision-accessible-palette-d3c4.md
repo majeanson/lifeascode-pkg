@@ -1,10 +1,6 @@
-# ⚖ Accessible color palette — works for colorblind children
+# ⚖️ Accessible color palette — works for colorblind children
 
-**Type:** Decision · **Status:** Active · **Domain:** design · **Tags:** accessibility, design, color, colorblindness · **Priority:** 3
-
----
-
-## Developer
+> **Decision** · Active · `accessibility` `design` `color` `colorblindness`
 
 ### Decision
 

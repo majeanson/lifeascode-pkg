@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 520" width="390" height="520">
+  <rect width="390" height="520" fill="#f9f7f2"/>
+  <rect x="20" y="20" width="350" height="480" rx="24" ry="24" fill="#e8e3db" opacity="0.6"/>
+  <rect x="16" y="16" width="350" height="480" rx="24" ry="24" fill="#ffffff" stroke="#e0dbd3" stroke-width="1.5"/>
+  <rect x="16" y="16" width="350" height="52" rx="24" ry="24" fill="#ffffff"/>
+  <rect x="16" y="44" width="350" height="24" fill="#ffffff"/>
+  <text x="191" y="46" font-family="Georgia, serif" font-size="15" font-weight="700" fill="#1a1a2e" text-anchor="middle">Shape Spotter</text>
+
+  <!-- Target shape label -->
+  <rect x="90" y="74" width="202" height="52" rx="12" ry="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="191" y="107" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#1a1a2e" text-anchor="middle">Triangle</text>
+
+  <!-- Instruction -->
+  <text x="191" y="148" font-family="Georgia, serif" font-size="13" fill="#6b6570" text-anchor="middle">Find the triangle. Tap it.</text>
+
+  <!-- 6-shape grid: 3 cols × 2 rows -->
+  <!-- Row 1 -->
+
+  <!-- Cell 1: Circle (wrong) -->
+  <rect x="40" y="162" width="96" height="96" rx="10" ry="10" fill="#f9f7f2" stroke="#e0dbd3" stroke-width="1"/>
+  <circle cx="88" cy="210" r="28" fill="none" stroke="#1a1a2e" stroke-width="2.5"/>
+
+  <!-- Cell 2: Square (wrong) -->
+  <rect x="148" y="162" width="96" height="96" rx="10" ry="10" fill="#f9f7f2" stroke="#e0dbd3" stroke-width="1"/>
+  <rect x="172" y="186" width="48" height="48" fill="none" stroke="#1a1a2e" stroke-width="2.5"/>
+
+  <!-- Cell 3: Triangle (CORRECT, green) -->
+  <rect x="256" y="162" width="96" height="96" rx="10" ry="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <polygon points="304,180 330,228 278,228" fill="none" stroke="#16a34a" stroke-width="3"/>
+
+  <!-- Row 2 -->
+
+  <!-- Cell 4: Star (wrong) -->
+  <rect x="40" y="270" width="96" height="96" rx="10" ry="10" fill="#f9f7f2" stroke="#e0dbd3" stroke-width="1"/>
+  <!-- 5-pointed star -->
+  <polygon points="88,278 93,296 112,296 97,307 103,326 88,315 73,326 79,307 64,296 83,296" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+
+  <!-- Cell 5: Heart (wrong) -->
+  <rect x="148" y="270" width="96" height="96" rx="10" ry="10" fill="#f9f7f2" stroke="#e0dbd3" stroke-width="1"/>
+  <!-- Heart approximation -->
+  <path d="M196 298 Q196 288 185 288 Q174 288 174 302 Q174 316 196 330 Q218 316 218 302 Q218 288 207 288 Q196 288 196 298 Z" fill="none" stroke="#1a1a2e" stroke-width="2.5"/>
+
+  <!-- Cell 6: Diamond (wrong) -->
+  <rect x="256" y="270" width="96" height="96" rx="10" ry="10" fill="#f9f7f2" stroke="#e0dbd3" stroke-width="1"/>
+  <polygon points="304,276 332,318 304,360 276,318" fill="none" stroke="#1a1a2e" stroke-width="2.5"/>
+
+  <text x="191" y="402" font-family="Georgia, serif" font-size="12" fill="#6b6570" text-anchor="middle">Different sizes and orientations</text>
+
+  <text x="191" y="490" font-family="Georgia, serif" font-size="11" fill="#c4bfb8" text-anchor="middle">Quiet Minds</text>
+</svg>

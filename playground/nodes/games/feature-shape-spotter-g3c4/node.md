@@ -49,3 +49,21 @@ A 3-year-old who only knows "circle" can still play and feel proud when they spo
 the right one. A 6-year-old who knows all eight shapes enjoys the speed of scanning
 and finding. The game never tells a child how many they got right — only whether
 the current one is right or wrong.
+
+## dev.implementation
+
+`ShapeSpotter.tsx` follows the shared GameEngine contract. State shape:
+- `targetShape: ShapeName` — the shape to find (shown as text at the top)
+- `grid: ShapeCard[]` — 6 items: 1 correct + 5 distractors
+- `phase: 'playing' | 'correct' | 'advancing'`
+- `wrongTaps: Set<number>` — index of incorrectly tapped cells
+
+Shapes are rendered as inline SVGs, not images, so they scale cleanly and are themeable. Each shape has 3–5 pre-defined size/rotation variants — `ShapeSpotter` picks one at random per round so the same shape never looks identical twice. This teaches generalisation: a rotated triangle is still a triangle.
+
+All shapes are **outlined only** (stroke, no fill) per the accessible-palette decision (decision-accessible-palette-d3c4). Colorblind children identify shapes by outline, never by fill color.
+
+`generateQuestion(excludeShape?)` picks a random target shape, selects a random variant for the correct card, and fills the remaining 5 cells with distinct shape types (no two identical shapes in the same grid).
+
+## dev.edgeCases
+
+With 8 shape types and a 6-cell grid, there are always enough distinct distractors. The target shape's variant is excluded from the distractor pool to avoid the edge case where a child taps the "wrong" instance of the correct shape.

@@ -1,10 +1,10 @@
-# ⚖ No audio — ever
+# ⚖️ No audio — ever
 
-**Type:** Decision · **Status:** Active · **Domain:** design · **Tags:** accessibility, policy, audio · **Priority:** 1
+> **Decision** · Active · `accessibility` `policy` `audio`
 
----
-
-## Developer
+{% hint style="danger" %}
+This is a permanent design decision. It is not open for reconsideration unless a formal decision node is created to override it.
+{% endhint %}
 
 ### Decision
 
