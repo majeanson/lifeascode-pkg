@@ -8,6 +8,7 @@ import {
   LacRoleSwitcher,
   type AudienceRole,
 } from '@lifeascode/lac'
+import CountTheDots from './games/CountTheDots'
 
 // ─── palette (from decision-accessible-palette-d3c4) ─────────────────────────
 const C = {
@@ -33,11 +34,11 @@ interface GameMeta {
   ageRange: string
   lacNodeId: string
   status: 'coming-soon' | 'ready'
-  component?: React.FC
+  component?: React.FC<{ onBack?: () => void }>
 }
 
 const GAMES: GameMeta[] = [
-  { id: 'count-the-dots',   title: 'Count the Dots',    emoji: '🔵', tagline: 'How many dots? Count and tap the right number.',        ageRange: '3 – 6', lacNodeId: 'feature-count-the-dots-g1a2',  status: 'coming-soon' },
+  { id: 'count-the-dots',   title: 'Count the Dots',    emoji: '🔵', tagline: 'How many dots? Count and tap the right number.',        ageRange: '3 – 6', lacNodeId: 'feature-count-the-dots-g1a2',  status: 'ready', component: CountTheDots },
   { id: 'letter-match',     title: 'Letter Match',      emoji: '🔤', tagline: 'Which picture starts with this letter?',                 ageRange: '4 – 7', lacNodeId: 'feature-letter-match-g2b3',    status: 'coming-soon' },
   { id: 'shape-spotter',    title: 'Shape Spotter',     emoji: '🔷', tagline: 'Find the matching shape hidden in the grid.',            ageRange: '3 – 6', lacNodeId: 'feature-shape-spotter-g3c4',  status: 'coming-soon' },
   { id: 'color-corner',     title: 'Color Corner',      emoji: '🎨', tagline: 'A color name appears. Tap the right swatch.',            ageRange: '3 – 5', lacNodeId: 'feature-color-corner-g4d5',   status: 'coming-soon' },
@@ -116,7 +117,10 @@ function HomeScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) {
               <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 8px', lineHeight: 1.5 }}>{game.tagline}</p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <Badge color={C.accentDk}>Ages {game.ageRange}</Badge>
-                <Badge color={C.muted}>Coming soon</Badge>
+                {game.status === 'ready'
+                  ? <Badge color={C.accent}>▶ Play</Badge>
+                  : <Badge color={C.muted}>Coming soon</Badge>
+                }
               </div>
             </div>
             {/* ? button — shows shared rules (parent) + this game's rules (child) */}
@@ -153,7 +157,7 @@ function HomeScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) {
 function GameScreen({ game, onBack }: { game: GameMeta; onBack: () => void }) {
   if (game.status === 'ready' && game.component) {
     const GameComponent = game.component
-    return <GameComponent />
+    return <GameComponent onBack={onBack} />
   }
   return (
     <div style={S.page}>

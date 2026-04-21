@@ -2,33 +2,43 @@
 id: feature-count-the-dots-g1a2
 type: feature
 title: Count the Dots
-status: draft
+status: active
 domain: games
 schemaVersion: 2
 priority: 1
-tags: [counting, numbers, math, ages-3-6]
+tags:
+  - counting
+  - numbers
+  - math
+  - ages-3-6
 parent: feature-game-mechanics-shared-gx00
-views:
-  dev:
-    componentFile: src/games/CountTheDots.tsx
-  product:
-    acceptanceCriteria:
-      - A card shows between 1 and 10 dots arranged in a simple pattern
-      - Four number buttons appear below (one correct, three wrong)
-      - Tapping the correct number turns the card green
-      - Tapping wrong turns the button red, card stays, child can try again
-      - After a correct answer, a new card appears automatically after 1.5 seconds
-      - No timer, no score pressure, no game over
+statusHistory:
+  - from: draft
+    to: active
+    date: '2026-04-21T00:41:32.205Z'
+dev:
+  componentFile: src/games/CountTheDots.tsx
+product:
+  acceptanceCriteria:
+    - A card shows between 1 and 10 dots arranged in a simple pattern
+    - 'Four number buttons appear below (one correct, three wrong)'
+    - Tapping the correct number turns the card green
+    - 'Tapping wrong turns the button red, card stays, child can try again'
+    - 'After a correct answer, a new card appears automatically after 1.5 seconds'
+    - 'No timer, no score pressure, no game over'
 ---
 
-## user.userGuide
+## dev.implementation
 
-A card appears with dots on it — anywhere from one to ten.
-Count the dots out loud or with your finger. When you know how many, tap
-that number at the bottom of the screen.
+`CountTheDots.tsx` is a self-contained React component. State machine follows the shared GameEngine contract:
+- `phase: 'playing' | 'correct' | 'advancing'`
+- `wrongTaps: Set<number>` — tracks which wrong choices were tapped (stay red, stay disabled)
+- On correct: phase → `'correct'`, card turns green, 1.5s timer → `'advancing'` → next question
+- On wrong: adds to `wrongTaps`, choice goes red; other untapped choices remain active
 
-The dots are big and easy to see. If you lose count, start again from the
-beginning — the card stays until you answer.
+Dots are rendered using a fixed `DOT_LAYOUTS` map (1–10) — each entry is `[col, row]` positions in a 3×3 or 4×3 grid, positioned absolutely inside a sized container.
+
+`generateQuestion(excludeAnswer?)` picks a random answer 1–10 (never the same as last), then picks 3 random wrong choices from the remaining pool and shuffles all 4.
 
 ## product.problem
 
@@ -45,3 +55,12 @@ No ticking clock. No three strikes. Just a child and their counting.
 A 3-year-old who doesn't know any numbers yet can still play this game by
 pointing and trying. A 6-year-old who knows their numbers up to 10 finds it
 satisfying to get every one right. Both children close the app feeling good.
+
+## user.userGuide
+
+A card appears with dots on it — anywhere from one to ten.
+Count the dots out loud or with your finger. When you know how many, tap
+that number at the bottom of the screen.
+
+The dots are big and easy to see. If you lose count, start again from the
+beginning — the card stays until you answer.
