@@ -1,15 +1,15 @@
 {
   "schemaVersion": 2,
-  "project": "@lifeascode playground",
+  "project": "Quiet Minds",
   "extends": ["@lifeascode"],
   "types": {},
   "views": {},
   "index": {
     "summaryFields": ["title", "status", "domain", "tags"],
-    "searchFields": ["title", "tags"]
+    "searchFields": ["title", "tags", "views.product.problem", "views.user.userGuide"]
   },
   "hub": {
-    "defaultTab": "sprint",
-    "accentColor": "#58a6ff"
+    "defaultTab": "guide",
+    "accentColor": "#7ec8a4"
   }
 }

@@ -80,6 +80,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     { name: 'spawn_child_node', description: 'Create a child node linked to a parent', inputSchema: { type: 'object', properties: { parentId: { type: 'string' }, type: { type: 'string' }, title: { type: 'string' } }, required: ['parentId', 'type', 'title'] } },
     { name: 'lock_node_fields', description: 'Lock specific fields on a node to prevent AI edits', inputSchema: { type: 'object', properties: { id: { type: 'string' }, fields: { type: 'array', items: { type: 'string' } }, reason: { type: 'string' } }, required: ['id', 'fields'] } },
     { name: 'node_summary_for_pr', description: 'Generate a PR description from a node (problem + implementation)', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
+    { name: 'next_action', description: 'What should I work on next? Analyzes workspace state and returns the single highest-priority next step with full context — great for starting a session.', inputSchema: { type: 'object', properties: { domain: { type: 'string', description: 'Optional: limit suggestion to a domain' } } } },
+    { name: 'plan_session', description: 'Generate a ready-to-use Claude coding session briefing for implementing a feature. Pass a node ID or omit to auto-select the next unbuilt feature.', inputSchema: { type: 'object', properties: { id: { type: 'string', description: 'Node ID (optional — omit to auto-pick highest priority draft feature)' } } } },
   ],
 }))
 
@@ -356,6 +358,141 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `\n**Node ID:** \`${node.id}\``,
         ].filter(Boolean).join('\n')
         return ok(summary)
+      }
+
+      case 'next_action': {
+        const { config } = getConfigOrThrow()
+        const nodes = allNodes().filter((n) => !args['domain'] || n.domain === args['domain'])
+
+        // 1. Draft nodes with zero fields filled → create or fill
+        const emptyDrafts = nodes.filter((n) => n.status === 'draft' && Object.keys(n.views ?? {}).length === 0)
+        if (emptyDrafts.length > 0) {
+          const n = emptyDrafts.sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))[0]!
+          return ok(`**Next action: fill "${n.title}"**\n\nNode \`${n.id}\` is a ${n.type} in draft with no fields filled yet.\n\nRun: \`fill_node("${n.id}")\` to auto-fill required fields, or \`read_node_context("${n.id}")\` to see what's needed.\n\nThen: \`plan_session("${n.id}")\` to get a coding session briefing.`)
+        }
+
+        // 2. Active nodes with missing required fields → fill gaps
+        const activeMissingFields: Array<{ id: string; title: string; missing: string[] }> = []
+        for (const n of nodes.filter((n) => n.status === 'active')) {
+          const typeDef = config.types[n.type]
+          const missing: string[] = []
+          for (const viewId of typeDef?.requiredViews ?? []) {
+            const viewDef = config.views[viewId]
+            for (const [fieldId, fieldDef] of Object.entries(viewDef?.fields ?? {})) {
+              if ((fieldDef as Record<string, unknown>)['required'] && isEmpty(getNestedValue(n, `views.${viewId}.${fieldId}`))) {
+                missing.push(`views.${viewId}.${fieldId}`)
+              }
+            }
+          }
+          if (missing.length > 0) activeMissingFields.push({ id: n.id, title: n.title, missing })
+        }
+        if (activeMissingFields.length > 0) {
+          const top = activeMissingFields[0]!
+          return ok(`**Next action: complete "${top.title}"**\n\nNode \`${top.id}\` is active but missing required fields:\n${top.missing.map((f) => `• ${f}`).join('\n')}\n\nRun: \`fill_node("${top.id}")\` to auto-fill, or \`write_node_fields\` to fill manually.\n\nThen: \`advance_node("${top.id}", "frozen")\` when all fields are complete.`)
+        }
+
+        // 3. Draft features with product view filled → ready to plan_session
+        const readyToBuild = nodes.filter((n) => n.status === 'draft' && n.type === 'feature' && !isEmpty(getNestedValue(n, 'views.product.problem')))
+          .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
+        if (readyToBuild.length > 0) {
+          const n = readyToBuild[0]!
+          return ok(`**Next action: build "${n.title}"**\n\nNode \`${n.id}\` is planned and ready to implement.\n\nRun: \`plan_session("${n.id}")\` to get a full coding session briefing.\n\nWhen built: \`advance_node("${n.id}", "active")\``)
+        }
+
+        // 4. Active features → advance to frozen if complete
+        const advanceable = nodes.filter((n) => n.status === 'active' && n.type === 'feature')
+          .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
+        if (advanceable.length > 0) {
+          const n = advanceable[0]!
+          return ok(`**Next action: review and freeze "${n.title}"**\n\nNode \`${n.id}\` is active. Check it's complete, then:\n\nRun: \`advance_node("${n.id}", "frozen")\` to mark it shipped.\n\nOr: \`read_node_context("${n.id}")\` to check for gaps first.`)
+        }
+
+        const total = nodes.length
+        const frozen = nodes.filter((n) => n.status === 'frozen').length
+        return ok(`Everything looks great! ${frozen}/${total} nodes are frozen.\n\nRun \`roadmap_view()\` to see the full picture, or create a new feature with \`create_node\`.`)
+      }
+
+      case 'plan_session': {
+        const nodes = allNodes()
+
+        // Pick target node
+        let target = args['id'] ? nodes.find((n) => n.id === (args['id'] as string) || n.id.includes(args['id'] as string)) : undefined
+        if (!target) {
+          // Auto-pick: highest priority draft feature with product.problem filled
+          target = nodes
+            .filter((n) => n.status === 'draft' && n.type === 'feature' && !isEmpty(getNestedValue(n, 'views.product.problem')))
+            .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))[0]
+        }
+        if (!target) {
+          // Fallback: any draft feature
+          target = nodes.filter((n) => n.status === 'draft' && n.type === 'feature').sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))[0]
+        }
+        if (!target) return ok('No draft features found. Create one with `create_node` first.')
+
+        // Gather context
+        const epic = nodes.find((n) => n.type === 'epic' && (target!.parent === n.id || n.children?.includes(target!.id)))
+        const decisions = nodes.filter((n) => n.type === 'decision' && n.status === 'active')
+        const epicProblem = epic ? getNestedValue(epic, 'views.product.problem') as string | undefined : undefined
+        const problem = getNestedValue(target, 'views.product.problem') as string | undefined
+        const criteria = getNestedValue(target, 'views.product.acceptanceCriteria') as string[] | undefined
+        const componentFile = getNestedValue(target, 'views.dev.componentFile') as string | undefined
+        const implementation = getNestedValue(target, 'views.dev.implementation') as string | undefined
+
+        // Format active decisions as constraints
+        const constraints = decisions
+          .map((d) => {
+            const choice = getNestedValue(d, 'views.dev.choice') as string | undefined
+            return choice ? `- **${d.title}**: ${choice.split('\n')[0]}` : null
+          })
+          .filter(Boolean)
+          .join('\n')
+
+        const criteriaList = (criteria ?? []).map((c) => `- ${c}`).join('\n')
+
+        const lines: string[] = [
+          `# Build Session: ${target.title}`,
+          ``,
+          `## Project Context`,
+          epic ? `You are building **${epic.title}**.` : 'You are working on a Quiet Minds game.',
+          epicProblem ? `\n${epicProblem.trim()}` : '',
+          ``,
+          `## What You're Building`,
+          `**${target.title}** — node \`${target.id}\``,
+          problem ? `\n${problem.trim()}` : '',
+          ``,
+        ]
+
+        if (criteriaList) {
+          lines.push(`## Acceptance Criteria`, criteriaList, ``)
+        }
+
+        if (constraints) {
+          lines.push(`## Design Constraints (active decisions)`, constraints, ``)
+        }
+
+        lines.push(
+          `## Technical Details`,
+          `- Component file: \`${componentFile ?? 'TBD — set views.dev.componentFile'}\``,
+          `- Status: \`${target.status}\` → advance to \`active\` when implementation is in progress`,
+          implementation ? `- Implementation notes: ${implementation.trim()}` : `- Implementation notes: not yet written — write as you build`,
+          ``,
+          `## Your Task`,
+          `Implement this game as a self-contained React component.`,
+          `Stack: React + Vite + TypeScript. No audio. No animation. Touch-friendly.`,
+          ``,
+          `When the component renders correctly:`,
+          `\`\`\``,
+          `advance_node("${target.id}", "active")`,
+          `write_node_fields("${target.id}", { "views.dev.implementation": "describe what you built" })`,
+          `\`\`\``,
+          ``,
+          `When the feature is fully complete and tested:`,
+          `\`\`\``,
+          `advance_node("${target.id}", "frozen")`,
+          `\`\`\``,
+        )
+
+        return ok(lines.join('\n'))
       }
 
       default:
